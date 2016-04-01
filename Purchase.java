@@ -1,3 +1,4 @@
+package shopping.list.csc340.project2;
 /**
  * This class is used to represent a purchase.
  * 
@@ -8,6 +9,7 @@
  */
 
 import java.time.LocalDate;
+import java.util.Date;
 
 public class Purchase {
     //Fields
@@ -48,7 +50,7 @@ public class Purchase {
          return this.purchaseDate;
      }
      
-     public Double getItemPrice(){
+     public double getItemPrice(){
          return this.itemPrice;
      }
      
@@ -68,7 +70,7 @@ public class Purchase {
          this.purchaseDate = date;
      }
      
-     public void setItemPrice(Double price){
+     public void setItemPrice(double price){
          this.itemPrice = price;
      }
      
