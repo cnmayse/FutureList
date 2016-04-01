@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Controller for the GUI
+ *
+ * I/We have abided by UNCG's academic integrity policy. This is my/our own work.
  */
 
 package shopping.list.csc340.project2;
