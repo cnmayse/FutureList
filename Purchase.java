@@ -13,12 +13,12 @@ public class Purchase {
     //Fields
      private String itemName;
      private Date purchaseDate;
-     private double itemPrice;
+     private Double itemPrice;
      private StoreName storeName;
      private PurchaseCategory purchaseCategory;
      
      //Constructors
-     //NOTE: only the full field constructor will be implemented to enforce
+     //NOTE: only the full field constructor will be implemented to try to enforce
      //instatiating purchase objects with non-null fields. However, it is 
      //up to the discretion of the calling code to pass null values.
      
@@ -30,7 +30,7 @@ public class Purchase {
       * @param sn the store name (StoreName)
       * @param pc the purchase category (PurchaseCategory)
       */
-     public Purchase(String s, Date d, double ip, StoreName sn, PurchaseCategory pc){
+     public Purchase(String s, Date d, Double ip, StoreName sn, PurchaseCategory pc){
          this.itemName = s;
          this.purchaseDate = d;
          this.itemPrice = ip;
@@ -48,7 +48,7 @@ public class Purchase {
          return this.purchaseDate;
      }
      
-     public double getItemPrice(){
+     public Double getItemPrice(){
          return this.itemPrice;
      }
      
@@ -68,7 +68,7 @@ public class Purchase {
          this.purchaseDate = date;
      }
      
-     public void setItemPrice(double price){
+     public void setItemPrice(Double price){
          this.itemPrice = price;
      }
      
