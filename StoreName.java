@@ -1,3 +1,4 @@
+package shopping.list.csc340.project2;
 /**
  * Enumeration of Store Names
  * 

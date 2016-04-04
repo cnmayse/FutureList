@@ -1,3 +1,4 @@
+package shopping.list.csc340.project2;
 /**
  * This class is used to represent a purchase.
  * 
@@ -7,12 +8,13 @@
  * @version Purchase v1.0.0
  */
 
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Purchase {
     //Fields
      private String itemName;
-     private Date purchaseDate;
+     private LocalDate purchaseDate;
      private Double itemPrice;
      private StoreName storeName;
      private PurchaseCategory purchaseCategory;
@@ -30,7 +32,7 @@ public class Purchase {
       * @param sn the store name (StoreName)
       * @param pc the purchase category (PurchaseCategory)
       */
-     public Purchase(String s, Date d, Double ip, StoreName sn, PurchaseCategory pc){
+     public Purchase(String s, LocalDate d, Double ip, StoreName sn, PurchaseCategory pc){
          this.itemName = s;
          this.purchaseDate = d;
          this.itemPrice = ip;
@@ -44,7 +46,7 @@ public class Purchase {
          return this.itemName;
      }
      
-     public Date getPurchaseDate(){
+     public LocalDate getPurchaseDate(){
          return this.purchaseDate;
      }
      
@@ -64,7 +66,7 @@ public class Purchase {
          this.itemName = name;
      }
      
-     public void setPurchaseDate(Date date){
+     public void setPurchaseDate(LocalDate date){
          this.purchaseDate = date;
      }
      
