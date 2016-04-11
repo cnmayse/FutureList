@@ -16,12 +16,9 @@
               <menus>
                 <Menu mnemonicParsing="false" text="File">
                   <items>
-                        <MenuItem mnemonicParsing="false" text="Close" />
-                  </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="Edit">
-                  <items>
-                    <MenuItem mnemonicParsing="false" text="Delete" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleAddPurchaseMenuAction" text="Add Purchases" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleCreateListMenuAction" text="Manage Purcahses" />
+                        <MenuItem mnemonicParsing="false" onAction="#handleCloseMenuAction" text="Close" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
@@ -35,7 +32,7 @@
          <center>
             <StackPane prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: GRAY;" BorderPane.alignment="CENTER">
                <children>
-                  <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;">
+                  <Pane fx:id="AddPurchasePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;" visible="false">
                      <children>
                         <Label fx:id="AddMessageDate" layoutX="22.0" layoutY="31.0" text="Add New Items for March 29, 2016">
                            <font>
@@ -144,87 +141,86 @@
                            </font></Label>
                      </children>
                   </Pane>
-                  <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;" visible="false">
+                  <Pane fx:id="CreateListPane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;">
                      <children>
-                        <Label layoutX="22.0" layoutY="14.0" text="Generate List and Graphs">
+                        <Label layoutX="22.0" layoutY="14.0" text="Manage Purchases">
                            <font>
-                              <Font size="18.0" />
+                              <Font size="24.0" />
                            </font>
                         </Label>
                         <Label layoutX="47.0" layoutY="93.0" text="Start Date" />
                         <Label layoutX="49.0" layoutY="197.0" text="End Date" />
                         <Label layoutX="267.0" layoutY="93.0" text="Item Name" />
-                        <Label layoutX="265.0" layoutY="151.0" text="Store Name" />
-                        <Label layoutX="272.0" layoutY="205.0" text="Category" />
-                        <DatePicker layoutX="48.0" layoutY="114.0" />
-                        <DatePicker layoutX="48.0" layoutY="226.0" />
-                        <TextField layoutX="266.0" layoutY="114.0" />
-                        <ComboBox layoutX="265.0" layoutY="174.0" prefWidth="150.0" />
-                        <ComboBox layoutX="265.0" layoutY="226.0" prefWidth="150.0" />
-                        <Button layoutX="500.0" layoutY="251.0" mnemonicParsing="false" text="Generate List" />
-                        <Button layoutX="490.0" layoutY="214.0" mnemonicParsing="false" text="Generate Graphs" />
-                        <CheckBox layoutX="487.0" layoutY="120.0" mnemonicParsing="false" text="Pie Chart" />
-                        <CheckBox layoutX="488.0" layoutY="168.0" mnemonicParsing="false" text="Histogram" />
-                        <CheckBox layoutX="488.0" layoutY="145.0" mnemonicParsing="false" text="Line Chart" />
-                        <ScrollPane layoutX="84.0" layoutY="326.0" prefHeight="171.0" prefViewportHeight="169.0" prefViewportWidth="616.0" prefWidth="636.0">
+                        <Label layoutX="443.0" layoutY="93.0" text="Store Name" />
+                        <Label layoutX="645.0" layoutY="93.0" text="Category" />
+                        <DatePicker fx:id="QueryStartDate" layoutX="48.0" layoutY="114.0" />
+                        <DatePicker fx:id="QueryEndDate" layoutX="48.0" layoutY="226.0" />
+                        <TextField fx:id="QueryItemName" layoutX="266.0" layoutY="114.0" />
+                        <ComboBox fx:id="QueryStoreName" layoutX="443.0" layoutY="114.0" prefWidth="150.0" />
+                        <ComboBox fx:id="QueryCategory" layoutX="645.0" layoutY="114.0" prefWidth="150.0" />
+                        <Button layoutX="352.0" layoutY="251.0" mnemonicParsing="false" onAction="#handleGenerateListButtonAction" style="-fx-pref-height: 50; -fx-pref-width: 100;" text="Generate List" />
+                        <ScrollPane layoutX="65.0" layoutY="325.0" prefHeight="171.0" prefViewportHeight="169.0" prefViewportWidth="616.0" prefWidth="650.0">
                            <content>
                               <HBox>
                                  <children>
-                                    <VBox fx:id="AddDateList11" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="33.0" style="-fx-border-color: BLACK;">
+                                    <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="33.0" style="-fx-border-color: BLACK;">
                                        <children>
-                                          <Label text="Del">
+                                          <Label>
                                              <font>
                                                 <Font size="18.0" />
                                              </font>
                                           </Label>
-                                          <CheckBox alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" />
-                                          <CheckBox mnemonicParsing="false" />
-                                          <CheckBox mnemonicParsing="false" />
+                                          <VBox fx:id="QueryDeleteList" alignment="TOP_CENTER" prefHeight="168.0" prefWidth="100.0" />
                                        </children>
                                     </VBox>
-                                    <VBox fx:id="AddDateList1" alignment="TOP_CENTER" prefHeight="168.0" prefWidth="100.0" style="-fx-border-color: BLACK;">
+                                    <VBox alignment="TOP_CENTER" style="-fx-border-color: BLACK;">
                                        <children>
                                           <Label text="Date">
                                              <font>
                                                 <Font size="18.0" />
                                              </font>
                                           </Label>
+                                          <VBox fx:id="QueryDateList" alignment="TOP_CENTER" prefHeight="168.0" prefWidth="100.0" />
                                        </children>
                                     </VBox>
-                                    <VBox fx:id="AddItemNameList1" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="145.0" style="-fx-border-color: BLACK;">
+                                    <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="146.0" style="-fx-border-color: BLACK;">
                                        <children>
                                           <Label text="Item Name">
                                              <font>
                                                 <Font size="18.0" />
                                              </font>
                                           </Label>
+                                          <VBox fx:id="QueryItemNameList" alignment="TOP_CENTER" prefHeight="168.0" prefWidth="157.0" />
                                        </children>
                                     </VBox>
-                                    <VBox fx:id="AddItemNameList11" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: BLACK;">
+                                    <VBox alignment="TOP_CENTER" style="-fx-border-color: BLACK;">
                                        <children>
                                           <Label text="Price">
                                              <font>
                                                 <Font size="18.0" />
                                              </font>
                                           </Label>
+                                          <VBox fx:id="QueryPriceList" alignment="TOP_CENTER" prefHeight="168.0" prefWidth="100.0" />
                                        </children>
                                     </VBox>
-                                    <VBox fx:id="AddItemNameList21" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="135.0" style="-fx-border-color: BLACK;">
+                                    <VBox alignment="TOP_CENTER" style="-fx-border-color: BLACK;">
                                        <children>
                                           <Label text="Store Name">
                                              <font>
                                                 <Font size="18.0" />
                                              </font>
                                           </Label>
+                                          <VBox fx:id="QueryStoreNameList" alignment="TOP_CENTER" prefHeight="168.0" prefWidth="148.0" />
                                        </children>
                                     </VBox>
-                                    <VBox fx:id="AddItemNameList31" alignment="TOP_CENTER" prefHeight="200.0" prefWidth="118.0" style="-fx-border-color: BLACK;">
+                                    <VBox alignment="TOP_CENTER" style="-fx-border-color: BLACK;">
                                        <children>
                                           <Label text="Category">
                                              <font>
                                                 <Font size="18.0" />
                                              </font>
                                           </Label>
+                                          <VBox fx:id="QueryCategoryList" alignment="TOP_CENTER" prefHeight="168.0" prefWidth="100.0" />
                                        </children>
                                     </VBox>
                                  </children>
@@ -237,7 +233,6 @@
                         <Label layoutX="432.0" layoutY="529.0" text="Most Frequent Store: Target (11)" />
                         <Label layoutX="432.0" layoutY="556.0" text="Most Frequent Category: Food (20)" />
                         <Button alignment="CENTER" layoutX="73.0" layoutY="516.0" mnemonicParsing="false" text="Delete&#10;Selected" textAlignment="CENTER" />
-                        <Label layoutX="465.0" layoutY="93.0" text="Types of Graphs:" />
                      </children>
                   </Pane>
                </children>
@@ -253,11 +248,41 @@
                               <Font size="24.0" />
                            </font>
                         </Label>
-                        <Label maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="April 2, 2016" />
-                        <Label text="Milk" />
-                        <Label text="Eggs" />
-                        <Label maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="April 5, 2016" />
-                        <Label text="Cheese" />
+                        <Label fx:id="Day1Date" maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="Day1Date">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
+                        <Label fx:id="Day1Text" text="Day1Text" />
+                        <Label fx:id="Day2Date" maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="Day2Date">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
+                        <Label fx:id="Day2Text" text="Day2Text" />
+                        <Label fx:id="Day3Date" maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="Day3Date">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
+                        <Label fx:id="Day3Text" text="Day3Text" />
+                        <Label fx:id="Day4Date" maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="Day4Date">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
+                        <Label fx:id="Day4Text" text="Day4Text" />
+                        <Label fx:id="Day5Date" maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="Day5Date">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
+                        <Label fx:id="Day5Text" text="Day5Text" />
+                        <Label fx:id="Day6Date" maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="Day6Date">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
+                        <Label fx:id="Day6Text" text="Day6Text" />
+                        <Label fx:id="Day7Date" maxWidth="1.7976931348623157E308" style="-fx-background-color: LIGHTGRAY;" text="Day7Date">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
+                        <Label fx:id="Day7Text" text="Day7Text" />
                      </children>
                   </VBox>
                </content>
