@@ -174,6 +174,10 @@ public class PurchaseData {
      */
     public ArrayList query(LocalDate startBound, LocalDate endBound, String qName, Double price, StoreName qStore, PurchaseCategory qCategory) {
         ArrayList queryResults = new ArrayList<Purchase>();
+        
+        /**
+         * If no parameters specified, return all purchases
+         */
         if(startBound == null && endBound == null && qName == null && price == null && qStore == null && qCategory == null){
             queryResults.addAll((purchaseHashMap.values()));
             return queryResults;
@@ -291,10 +295,7 @@ public class PurchaseData {
         }
         if (storeKeyList != null) {
             purchaseKeySubList.add(storeKeyList);
-        }
-       
-        
-       
+        }       
 
         //Comparator class for ArrayList sort
         class KeyListComparator implements Comparator<ArrayList> {
@@ -425,5 +426,4 @@ public class PurchaseData {
         deletePurchase(op);
         addPurchase(np);
     }
-
 }
