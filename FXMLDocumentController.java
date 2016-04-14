@@ -7,20 +7,15 @@
 package shopping.list.csc340.project2;
 
 import java.net.URL;
+import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalAmount;
+import java.time.Period;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -29,7 +24,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -52,9 +46,9 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private VBox AddDateList, AddItemNameList, AddPriceList, AddStoreNameList, AddCategoryList, QueryItemNameList, QueryDateList, QueryPriceList, QueryStoreNameList, QueryCategoryList, QueryDeleteList;
     @FXML
-    private Label AddMessageDate, Day1Date, Day1Text, Day2Date, Day2Text, Day3Date, Day3Text, Day4Date, Day4Text, Day5Date, Day5Text, Day6Date, Day6Text, Day7Date, Day7Text;
+    private Label AddMessageDate, Day1Date, Day1Text, Day2Date, Day2Text, Day3Date, Day3Text, Day4Date, Day4Text, Day5Date, Day5Text, Day6Date, Day6Text, Day7Date, Day7Text, MeanPriceLabel, ModeStoreLabel, TotalPriceLabel, ModeCategoryLabel, ModeItemLabel, TimeFrameLabel, AddPurchasesDateLabel;
     @FXML
-    private Pane AddPurchasePane, CreateListPane; 
+    private Pane AddPurchasePane, CreateListPane, HomePane; 
         
     /**
      * Global variables
@@ -62,10 +56,14 @@ public class FXMLDocumentController implements Initializable {
     private TextField[] AddItemNameArray, AddPriceArray;
     private ComboBox[] AddStoreNameArray, AddCategoryArray;    
     private LocalDate newDate, todayDate;    
-    Purchase newPurchase;
-    PurchaseData purchaseData;
-    PurchaseCategory category;
-    StoreName storeName;
+    private Purchase newPurchase;
+    private PurchaseData purchaseData;
+    private PurchaseCategory category;
+    private StoreName storeName;
+    private ArrayList<Purchase> queryResult;
+    private ArrayList<Purchase> todayPurchases;
+    private StatisticGenerator sGen;
+    private NumberFormat currencyFormat;
     
     /**
      * This method handles when the "Add Items" button is clicked 
@@ -90,17 +88,23 @@ public class FXMLDocumentController implements Initializable {
             if(AddItemNameArray[i].getText().equals("") || AddItemNameArray[i] == null){
                 continue;
             }
-            if(AddStoreNameArray[i].getValue() != null && AddStoreNameArray[i].getValue().toString().equals(""))
+            if(AddStoreNameArray[i].getValue() != null && AddStoreNameArray[i].getValue().toString().equals("")){
                 AddStoreNameArray[i].setValue(null);
-            if(AddCategoryArray[i].getValue() != null && AddCategoryArray[i].getValue().toString().equals(""))
+            }
+            if(AddCategoryArray[i].getValue() != null && AddCategoryArray[i].getValue().toString().equals("")){
                 AddCategoryArray[i].setValue(null);
+            }
+            
+            //TODO
+            //Replace all non numbers or non-decimal points with empty string in Price textfield                  
+            
             addNewPurchase(AddItemNameArray[i].getText(), AddPriceArray[i].getText().equals("")? null : Double.parseDouble(AddPriceArray[i].getText()), (StoreName) AddStoreNameArray[i].getValue(), (PurchaseCategory)AddCategoryArray[i].getValue());               
                      
         }        
         /**
          * Populate the entries for the List of Purchases made today and clear the parameters
          */
-        populateList();
+        AddNewTodayPurchaseList();
         clearFields();
      
     }
@@ -112,28 +116,56 @@ public class FXMLDocumentController implements Initializable {
      */
     @FXML
     private void handleGenerateListButtonAction(ActionEvent event){
-        ArrayList queryResult = new ArrayList();
-        if(QueryStoreName.getValue() != null && QueryStoreName.getValue().toString().equals(""))
-                QueryStoreName.setValue(null);
-        if(QueryCategory.getValue() != null && QueryCategory.getValue().toString().equals(""))
-                QueryCategory.setValue(null);        
-        if(QueryItemName.getText() != null && QueryItemName.getText().toString().equals(""))
-                QueryItemName.setText(null); 
+        queryResult = new ArrayList();
+        sGen = new StatisticGenerator();        
+        Double totalPrice = 0.0;
+        LocalDate startDate;
+        LocalDate endDate;
         
-       
+        if(QueryStoreName.getValue() != null && QueryStoreName.getValue().toString().equals("")){
+                QueryStoreName.setValue(null);
+        }
+        if(QueryCategory.getValue() != null && QueryCategory.getValue().toString().equals("")){
+                QueryCategory.setValue(null);        
+        }
+        if(QueryItemName.getText() != null && QueryItemName.getText().toString().equals("")){
+                QueryItemName.setText(null); 
+        }       
         
         queryResult  = purchaseData.query(QueryStartDate.getValue(), QueryEndDate.getValue(), 
                 QueryItemName.getText(), 
                 null, (StoreName) QueryStoreName.getValue(),
                 (PurchaseCategory) QueryCategory.getValue());
         
+        if(queryResult.size() > 0){
+            //Sort the results based on date
+            mergeSortQuery(queryResult);
+            
+            /**
+             * Output info to the user, if applicable
+             */
+            
+            //Find the time span of the query
+            startDate = queryResult.get(0).getPurchaseDate();
+            endDate = queryResult.get(queryResult.size()-1).getPurchaseDate();
+            Period period = endDate.until(startDate.plusDays(1));
+
+            TimeFrameLabel.setText("Time Frame: " + period.getDays() + " day(s)");
+            MeanPriceLabel.setText("Mean Price of Purchases: " + currencyFormat.format(sGen.meanPrice(queryResult)));
+            //If there are no store names in result query, use empty string in display
+            ModeStoreLabel.setText("Most Frequent Store: " + (sGen.modeStore(queryResult) == null? "" : sGen.modeStore(queryResult)));
+            //If there are no categories in result query, use empty string in display
+            ModeCategoryLabel.setText("Most Frequent Category: "  + (sGen.modeCategory(queryResult) == null? "" : sGen.modeCategory(queryResult)));
+            ModeItemLabel.setText("Most Frequent Item: " + sGen.modeItem(queryResult));                   
+            TotalPriceLabel.setText("Total Amount Spent: " + currencyFormat.format(sGen.getPurchaseSum()));
+        }
         QueryItemNameList.getChildren().clear();
         QueryDateList.getChildren().clear();
         QueryPriceList.getChildren().clear();
         QueryStoreNameList.getChildren().clear();
         QueryCategoryList.getChildren().clear();
         QueryDeleteList.getChildren().clear();
-        populateQueryList(queryResult);        
+        populateQueryList();        
     }
     
     /**
@@ -163,11 +195,15 @@ public class FXMLDocumentController implements Initializable {
     private void handleAddChangeDateAction(ActionEvent event){
         newDate = AddCalendar.getValue();
         AddMessageDate.setText("Add New Items for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
+        AddPurchasesDateLabel.setText("All Purchases for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
         AddDateList.getChildren().clear();
         AddItemNameList.getChildren().clear();
         AddPriceList.getChildren().clear();
         AddStoreNameList.getChildren().clear();
         AddCategoryList.getChildren().clear();
+        
+        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null,null);
+        TodayPurchasesList();
     }
     /**
      * Takes the user to the add new purchase screen
@@ -176,6 +212,7 @@ public class FXMLDocumentController implements Initializable {
     private void handleAddPurchaseMenuAction(ActionEvent event){
         AddPurchasePane.setVisible(true);
         CreateListPane.setVisible(false);
+        HomePane.setVisible(false);
     }
     /**
      * Takes the user to the create list screen
@@ -184,6 +221,7 @@ public class FXMLDocumentController implements Initializable {
     private void handleCreateListMenuAction(ActionEvent event){
         AddPurchasePane.setVisible(false);
         CreateListPane.setVisible(true);
+        HomePane.setVisible(false);
     }
     /**
      * Closes the application
@@ -192,6 +230,10 @@ public class FXMLDocumentController implements Initializable {
     private void handleCloseMenuAction(ActionEvent event){
         Stage stage = (Stage) AddPurchasePane.getScene().getWindow();
         stage.hide();        
+    }
+    @FXML
+    private void handleDeleteSelectedButtonAction(ActionEvent evnet){
+        getDeletedPurchases();
     }
     
     /**
@@ -202,11 +244,15 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {                              
         newDate = LocalDate.now();       
-        todayDate = LocalDate.now();
+        todayDate = LocalDate.now();    
         purchaseData = new PurchaseData();
-        UpcomingPurchases();
-        AddMessageDate.setText("Add New Items for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());        
-        initAddItems();        
+        currencyFormat = NumberFormat.getCurrencyInstance();
+        todayPurchases = purchaseData.query(newDate, newDate, null, null, null, null);
+        TodayPurchasesList();
+        UpcomingPurchases();        
+        AddMessageDate.setText("Add New Items for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());    
+        AddPurchasesDateLabel.setText("All Purchases for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
+        initAddItems();     
     }    
     /**
      * Method to control the list of upcoming purchases
@@ -279,10 +325,40 @@ public class FXMLDocumentController implements Initializable {
         purchaseData.addPurchase(newPurchase);
     }
     
+    private void TodayPurchasesList(){
+        AddDateList.getChildren().clear();
+        AddItemNameList.getChildren().clear();
+        AddPriceList.getChildren().clear();
+        AddStoreNameList.getChildren().clear();
+        AddCategoryList.getChildren().clear();
+        
+        for(int i =0; i < todayPurchases.size(); i ++){
+            AddDateList.getChildren().add(new Label(todayPurchases.get(i).getPurchaseDate().toString()));
+            AddItemNameList.getChildren().add(new Label(todayPurchases.get(i).getItemName().toString()));            
+            if(todayPurchases.get(i).getItemPrice() == null){
+                AddPriceList.getChildren().add(new Label(""));
+            }else{
+                AddPriceList.getChildren().add(new Label(todayPurchases.get(i).getItemPrice().toString()));
+            }
+            
+            if(todayPurchases.get(i).getStoreName() == null){
+                AddStoreNameList.getChildren().add(new Label(""));  
+            }else{
+                AddStoreNameList.getChildren().add(new Label(todayPurchases.get(i).getStoreName().toString()));                
+            }
+            
+            if(todayPurchases.get(i).getPurchaseCategory() == null){
+                AddCategoryList.getChildren().add(new Label(""));
+            }else{
+                AddCategoryList.getChildren().add(new Label(todayPurchases.get(i).getPurchaseCategory().toString()));                
+            }
+        }
+    }
+    
     /**
      * Updates the list that keep track of the purchases made today in a top down fashion
      */
-    private void populateList() {
+    private void AddNewTodayPurchaseList() {
         VBox tempBox = new VBox();
         
         for(int i = 0; i < 4; i++){
@@ -303,10 +379,16 @@ public class FXMLDocumentController implements Initializable {
             AddItemNameList.getChildren().addAll(new Label(AddItemNameArray[i].getText()));
             AddItemNameList.getChildren().addAll(tempBox.getChildren());        
             tempBox.getChildren().clear();
-             
+            
+            
             tempBox.getChildren().addAll(AddPriceList.getChildren());
             AddPriceList.getChildren().clear();
-            AddPriceList.getChildren().addAll(new Label(AddPriceArray[i].getText()));
+            if(AddPriceArray[i].getText() == null){
+                AddPriceList.getChildren().addAll(new Label(""));
+                
+            }else{
+                AddPriceList.getChildren().addAll(new Label(currencyFormat.format(Double.parseDouble(AddPriceArray[i].getText()))));
+            }
             AddPriceList.getChildren().addAll(tempBox.getChildren());        
             tempBox.getChildren().clear();         
            
@@ -347,30 +429,115 @@ public class FXMLDocumentController implements Initializable {
     }
     
     /**
-     * Populates the list for the create a list query
+     * Merge sort to sort the results of the query by date
+     * Most recent date appears first in the list
      */
-    private void populateQueryList(ArrayList<Purchase> qResult) {
-        for(int i =0; i < qResult.size(); i ++){
-            QueryDeleteList.getChildren().add(new CheckBox());
-            QueryDateList.getChildren().add(new Label(qResult.get(i).getPurchaseDate().toString()));
-            QueryItemNameList.getChildren().add(new Label(qResult.get(i).getItemName().toString()));            
-            if(qResult.get(i).getItemPrice() == null){
-                QueryPriceList.getChildren().add(new Label(""));
-            }else{
-                QueryPriceList.getChildren().add(new Label(qResult.get(i).getItemPrice().toString()));
+    private ArrayList<Purchase> mergeSortQuery(ArrayList<Purchase> list){
+        ArrayList<Purchase> left = new ArrayList<Purchase>();
+        ArrayList<Purchase> right = new ArrayList<Purchase>();
+        int center;
+        
+        if(list.size() <= 1)
+            return list;
+        else{
+            center = list.size()/2;
+            for(int i =0; i < center; i ++){
+                left.add(list.get(i));
             }
-            
-            if(qResult.get(i).getStoreName() == null){
-                QueryStoreNameList.getChildren().add(new Label(""));  
-            }else{
-                QueryStoreNameList.getChildren().add(new Label(qResult.get(i).getStoreName().toString()));                
+            for(int i=center; i <list.size(); i++){
+                right.add(list.get(i));
             }
+            left = mergeSortQuery(left);
+            right = mergeSortQuery(right);
             
-            if(qResult.get(i).getPurchaseCategory() == null){
-                QueryCategoryList.getChildren().add(new Label(""));
-            }else{
-                QueryCategoryList.getChildren().add(new Label(qResult.get(i).getPurchaseCategory().toString()));                
+            mergeQuery(left, right, list);        
+        }
+        return list;  
+    }
+    
+    private void mergeQuery(ArrayList<Purchase> left, ArrayList<Purchase> right, ArrayList<Purchase> list){
+        int leftIndex = 0;
+        int rightIndex = 0;
+        int listIndex = 0;
+        
+        while(leftIndex < left.size() && rightIndex < right.size()){
+            if((left.get(leftIndex).getPurchaseDate()).isAfter(right.get(rightIndex).getPurchaseDate())){
+                list.set(listIndex, left.get(leftIndex));
+                leftIndex++;
+            }
+            else{
+                list.set(listIndex, right.get(rightIndex));
+                rightIndex++;
+            }
+            listIndex++;
+        }
+        if(leftIndex >= left.size()){
+            for(int i = rightIndex; i < right.size(); i++){
+                list.set(listIndex, right.get(i));
+                listIndex++;
             }
         }
+        else{
+            for(int i = leftIndex; i < left.size(); i++){
+                list.set(listIndex, left.get(i));
+                listIndex++;
+            }
+        }
+    }
+    
+    /**
+     * Populates the list for the create a list query
+     */
+    private void populateQueryList() {
+                
+        QueryDeleteList.getChildren().clear();
+        QueryDateList.getChildren().clear();
+        QueryItemNameList.getChildren().clear();
+        QueryPriceList.getChildren().clear();
+        QueryStoreNameList.getChildren().clear();
+        QueryCategoryList.getChildren().clear();
+        
+        for(int i =0; i < queryResult.size(); i ++){
+            QueryDeleteList.getChildren().add(new CheckBox());
+            QueryDateList.getChildren().add(new Label(queryResult.get(i).getPurchaseDate().toString()));
+            QueryItemNameList.getChildren().add(new Label(queryResult.get(i).getItemName().toString()));            
+            if(queryResult.get(i).getItemPrice() == null){
+                QueryPriceList.getChildren().add(new Label(""));
+            }else{
+                QueryPriceList.getChildren().add(new Label((currencyFormat.format(queryResult.get(i).getItemPrice()).toString())));
+            }
+            
+            if(queryResult.get(i).getStoreName() == null){
+                QueryStoreNameList.getChildren().add(new Label(""));  
+            }else{
+                QueryStoreNameList.getChildren().add(new Label(queryResult.get(i).getStoreName().toString()));                
+            }
+            
+            if(queryResult.get(i).getPurchaseCategory() == null){
+                QueryCategoryList.getChildren().add(new Label(""));
+            }else{
+                QueryCategoryList.getChildren().add(new Label(queryResult.get(i).getPurchaseCategory().toString()));                
+            }
+        }
+    }
+    
+    private void getDeletedPurchases(){
+        List<Node> deletePurchases = new ArrayList<Node>();
+        ObservableList<Node> observableList = FXCollections.observableList(deletePurchases);
+        observableList.addAll(QueryDeleteList.getChildren());            
+        
+        for(int i =0; i < observableList.size(); i++){
+            if(((CheckBox)observableList.get(i)).isSelected()){
+                purchaseData.deletePurchase((Purchase)queryResult.get(i));
+                queryResult.remove(i);
+                queryResult.add(i, null);
+            }
+        }
+        
+        while(queryResult.contains(null)){
+            queryResult.remove(null);
+        }
+        
+        populateQueryList();
     }
 }
