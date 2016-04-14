@@ -9,7 +9,6 @@ package shopping.list.csc340.project2;
  */
 
 import java.time.LocalDate;
-import java.util.Date;
 
 public class Purchase {
     //Fields
@@ -50,7 +49,7 @@ public class Purchase {
          return this.purchaseDate;
      }
      
-     public double getItemPrice(){
+     public Double getItemPrice(){
          return this.itemPrice;
      }
      
