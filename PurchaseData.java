@@ -1,429 +1,551 @@
-package shopping.list.csc340.project2;
+package ShoppingListPackage;
+
+import java.net.URL;
+import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.time.Month;
+import java.time.Period;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
+import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 /**
- * Abstraction for holding and querying for purchases.
- *
- * I have abided by UNCG's academic integrity policy. This is my own work.
- *
- * @author Charles Mayse
- * @version PurchaseData v1.0.0
+ * This is the controller class for the GUI
+ * 
+ * @author Matthew Yengle
  */
-public class PurchaseData {
-
+public class FXMLDocumentController implements Initializable {
     /**
-     * Summary of data structure: each field of a purchase object.toString()
-     * will be used as a key in individual hashmaps. The key will be associated
-     * with a purchase object.
-     */
-    private HashMap itemNameHashMap;
-    private HashMap dateHashMap;
-    private HashMap itemPriceHashMap;
-    private HashMap storeNameHashMap;
-    private HashMap categoryHashMap;
-
+     * fx:id variable names
+     */    
+    @FXML
+    private TextField AddItemName1,  AddItemName2,  AddItemName3,  AddItemName4, AddPrice1, AddPrice2, AddPrice3,AddPrice4, QueryItemName; 
+    @FXML
+    private ComboBox AddStoreName1, AddStoreName2,AddStoreName3, AddStoreName4, AddStoreNameAll, AddCategory1, AddCategory2, AddCategory3, AddCategory4, AddCategoryAll, QueryStoreName, QueryCategory;
+    @FXML
+    private DatePicker AddCalendar, QueryStartDate, QueryEndDate;  
+    @FXML
+    private VBox AddDateList, AddItemNameList, AddPriceList, AddStoreNameList, AddCategoryList, QueryItemNameList, QueryDateList, QueryPriceList, QueryStoreNameList, QueryCategoryList, QueryDeleteList;
+    @FXML
+    private Label AddMessageDate, Day1Date, Day1Text, Day2Date, Day2Text, Day3Date, Day3Text, Day4Date, Day4Text, Day5Date, Day5Text, Day6Date, Day6Text, Day7Date, Day7Text, MeanPriceLabel, ModeStoreLabel, TotalPriceLabel, ModeCategoryLabel, ModeItemLabel, TimeFrameLabel, AddPurchasesDateLabel;
+    @FXML
+    private Pane AddPurchasePane, CreateListPane, HomePane; 
+        
     /**
-     * This is the actual hashmap that contains all of the purchases, keyed by
-     * object.toString() associated with the actual object. This is so that we
-     * can query about different fields about a purchase
+     * Global variables
      */
-    private HashMap purchaseHashMap;
-    
-  
+    private TextField[] AddItemNameArray, AddPriceArray;
+    private ComboBox[] AddStoreNameArray, AddCategoryArray;    
+    private LocalDate newDate, todayDate;    
+    private Purchase newPurchase;
+    private PurchaseData purchaseData;
+    private PurchaseCategory category;
+    private StoreName storeName;
+    private ArrayList<Purchase> queryResult;
+    private ArrayList<Purchase> todayPurchases;
+    private StatisticGenerator sGen;
+    private NumberFormat currencyFormat;
+    private FileManager purchaseFile;
+    ArrayList<Purchase> currentPurchases;
     /**
-     * This main() will primarily be used for testing purposes. Delete if 
-     * necessary
+     * This method handles when the "Add Items" button is clicked 
      */
-   /*   public static void main(String[] args) {
-        
-        Purchase p1 = new Purchase("Tshirt", LocalDate.now(), 4.35, StoreName.WALMART, PurchaseCategory.CLOTHING);
-        
-        PurchaseData purchaseData = new PurchaseData();
-        
-        purchaseData.addPurchase(p1);
-        
-        Purchase p2 = new Purchase("Water", LocalDate.now(), 1.29, StoreName.HARRIS_TEETER, PurchaseCategory.FOOD);
-        
-        purchaseData.addPurchase(p2);
-        
-        Purchase p3 = new Purchase("Tires", LocalDate.now(), 649.00, StoreName.WALMART, PurchaseCategory.FOOD);
-        
-        purchaseData.addPurchase(p3);
-        
-        System.out.println("Number of items in purchase data");
-        
-        ArrayList result = purchaseData.query(LocalDate.of(2012, Month.MARCH, 1), null, null, null, null, null);
-        
-        System.out.println(result.size());
-        
-        System.out.println("Items in purchase data" + "\n");
-        
-        
-        for(int i = 0; i<result.size(); i++){
-            String line = "";
-           line+=(((Purchase)result.get(i)).getItemName()) + ",";
-           line+=(((Purchase)result.get(i)).getItemPrice()) + ",";
-           line+=(((Purchase)result.get(i)).getPurchaseDate() + ",");
-           line+=(((Purchase)result.get(i)).getStoreName() + ",");
-           line+=(((Purchase)result.get(i)).getPurchaseCategory() + "\n");
-            System.out.print(line);
-        }
-        
-        result = purchaseData.query(LocalDate.of(2012, Month.MARCH, 1), null, null, null, StoreName.HARRIS_TEETER, null);
-        
-        System.out.println("\nItems from Harris Teeter");
-        
-        for(int i = 0; i<result.size(); i++){
-            String line = "";
-           line+=(((Purchase)result.get(i)).getItemName()) + ",";
-           line+=(((Purchase)result.get(i)).getItemPrice()) + ",";
-           line+=(((Purchase)result.get(i)).getPurchaseDate() + ",");
-           line+=(((Purchase)result.get(i)).getStoreName() + ",");
-           line+=(((Purchase)result.get(i)).getPurchaseCategory() + "\n");
-            System.out.print(line);
-        }
-        
-        System.out.println("\nPurchase toStrings()");
-        System.out.println("p1 " + p1.toString());
-        System.out.println("p2 " + p2.toString());
-        System.out.println("p3 " + p3.toString());
-        
-        
-    }*/
-
-    //Default constructor
-    public PurchaseData() {
-        itemNameHashMap = new HashMap<String, ArrayList>();
-        dateHashMap = new HashMap<LocalDate, ArrayList>();
-        itemPriceHashMap = new HashMap<Double, ArrayList>();
-        storeNameHashMap = new HashMap<StoreName, ArrayList>();
-        categoryHashMap = new HashMap<PurchaseCategory, ArrayList>();
-        purchaseHashMap = new HashMap<String, Purchase>();
-    }
-
-    /**
-     * Adds a purchase to the data collection.
-     *
-     * @param p The purchase to add
-     */
-    public void addPurchase(Purchase p) {
-
-        //Hash purchase names
-        if (p.getItemName() != null && itemNameHashMap.containsKey(p.getItemName())) {
-            ((ArrayList) (itemNameHashMap.get(p.getItemName()))).add(p.toString());
-        } else if (p.getItemName() != null) {
-            itemNameHashMap.put(p.getItemName(), new ArrayList<Purchase>());
-            ((ArrayList) (itemNameHashMap.get(p.getItemName()))).add(p.toString());
-        }
-
-        //Hash purchase dates
-        if (p.getPurchaseDate() != null && dateHashMap.containsKey(p.getPurchaseDate())) {
-            ((ArrayList) (dateHashMap.get(p.getPurchaseDate()))).add(p.toString());
-        } else if (p.getPurchaseDate() != null) {
-            dateHashMap.put(p.getPurchaseDate(), new ArrayList<Purchase>());
-            ((ArrayList) (dateHashMap.get(p.getPurchaseDate()))).add(p.toString());
-        }
-
-        //Hash item prices
-        if (itemPriceHashMap.containsKey(p.getItemPrice())) {
-            ((ArrayList) (itemPriceHashMap.get(p.getItemPrice()))).add(p.toString());
-        } else {
-            itemPriceHashMap.put(p.getItemPrice(), new ArrayList<Purchase>());
-            ((ArrayList) (itemPriceHashMap.get(p.getItemPrice()))).add(p.toString());
-        }
-
-        //Hash store names
-        if (p.getStoreName() != null && storeNameHashMap.containsKey(p.getStoreName())) {
-            ((ArrayList) (storeNameHashMap.get(p.getStoreName()))).add(p.toString());
-        } else if (p.getStoreName() != null) {
-            storeNameHashMap.put(p.getStoreName(), new ArrayList<Purchase>());
-            ((ArrayList) (storeNameHashMap.get(p.getStoreName()))).add(p.toString());
-        }
-
-        //Hash categories
-        if (p.getPurchaseCategory() != null && categoryHashMap.containsKey(p.getPurchaseCategory())) {
-            ((ArrayList) (categoryHashMap.get(p.getPurchaseCategory()))).add(p.toString());
-        } else if (p.getItemName() != null) {
-            categoryHashMap.put(p.getPurchaseCategory(), new ArrayList<Purchase>());
-            ((ArrayList) (categoryHashMap.get(p.getPurchaseCategory()))).add(p.toString());
-        }
-
-        //Hash the purchase objects
-        purchaseHashMap.put(p.toString(), p);
-    }
-
-    /**
-     * Queries the data collection based on inputs from the gui.
-     * If return is of 0 size, then there aren't any results
-     *
-     * @param startBound Staring date
-     * @param endBound Ending date
-     * @param qName Item Name
-     * @param price item price
-     * @param qStore Store Name
-     * @param qCategory Category
-     * @return the list of purchases that fulfill the query requirements
-     */
-    public ArrayList query(LocalDate startBound, LocalDate endBound, String qName, Double price, StoreName qStore, PurchaseCategory qCategory) {
-        ArrayList queryResults = new ArrayList<Purchase>();
+    @FXML
+    private void handleAddButtonAction(ActionEvent event) {  
+        /**
+         * Create an array for each type of field for easier access
+         */
+        AddItemNameArray = new TextField[]{AddItemName1, AddItemName2, AddItemName3, AddItemName4};
+        AddPriceArray = new TextField[]{AddPrice1, AddPrice2, AddPrice3, AddPrice4};
+        AddStoreNameArray = new ComboBox[]{AddStoreName1, AddStoreName2, AddStoreName3, AddStoreName4};
+        AddCategoryArray = new ComboBox[]{AddCategory1, AddCategory2, AddCategory3, AddCategory4};        
         
         /**
-         * If no parameters specified, return all purchases
+         * A purchase needs to have a Item Name at minumum
+         * If the purchase does not have an Item Name, continue the loop
+         * 
+         * A null String can not parse to an int, if else statement is used to detect a null Price value
          */
-        if(startBound == null && endBound == null && qName == null && price == null && qStore == null && qCategory == null){
-            queryResults.addAll((purchaseHashMap.values()));
-            return queryResults;
-        }
+        for(int i =0; i <4; i++){            
+            if(AddItemNameArray[i].getText().equals("") || AddItemNameArray[i] == null){
+                continue;
+            }
+            if(AddStoreNameArray[i].getValue() != null && AddStoreNameArray[i].getValue().toString().equals("")){
+                AddStoreNameArray[i].setValue(null);
+            }
+            if(AddCategoryArray[i].getValue() != null && AddCategoryArray[i].getValue().toString().equals("")){
+                AddCategoryArray[i].setValue(null);
+            }
+            
+            //TODO
+            //Replace all non numbers or non-decimal points with empty string in Price textfield                  
+            
+            addNewPurchase(AddItemNameArray[i].getText(), AddPriceArray[i].getText().equals("")? null : Double.parseDouble(AddPriceArray[i].getText()), (StoreName) AddStoreNameArray[i].getValue(), (PurchaseCategory)AddCategoryArray[i].getValue());               
+                     
+        }        
+        /**
+         * Populate the entries for the List of Purchases made today and clear the parameters
+         */
+        AddNewTodayPurchaseList();
+        currentPurchases = purchaseData.query(null, null, null, null, null, null);
+        purchaseFile.SavePurchases(currentPurchases);
+        clearFields();
+     
+    }
+    /**
+     * Method to create a list based on the users parameters
+     * If no value has been set for a parameter, the parameter is sent as null
+     * 
+     * Clears previous query results in the list
+     */
+    @FXML
+    private void handleGenerateListButtonAction(ActionEvent event){
+        queryResult = new ArrayList();
+        sGen = new StatisticGenerator();        
+        Double totalPrice = 0.0;
+        LocalDate startDate;
+        LocalDate endDate;
         
-        
-        //Date subquery
-        //<editor-fold>
-        //ArrayList to hold all of the keys for the purchaseHashMap
-        ArrayList datePurchaseKeyList = null;
-        //startBound and endBound sub queries, does not execute if both bounds are not defined
-        if (startBound != null || endBound != null) {
-
-            //get the entry set of the dateHashMap
-            Set dateEntrySet = dateHashMap.entrySet();
-            //iterator to iterate through the entrySet
-            Iterator iterator = dateEntrySet.iterator();
-
-            //Iterate through the set
-            while (iterator.hasNext()) {
-                Map.Entry dateEntry = (Map.Entry) iterator.next();
-
-                //Get the date
-                LocalDate dateKey = (LocalDate) dateEntry.getKey();
-
-                //perform the start and end bound query, add matches 
-                if (startBound != null && endBound != null) {
-                    if (dateKey.isAfter(startBound) && dateKey.isBefore(endBound)) {
-                        datePurchaseKeyList = (ArrayList) dateEntry.getValue();
-                        break;
-                    }
-                } //perform the start bound only query
-                else if (startBound != null) {
-                    if (dateKey.isAfter(startBound)) {
-                        datePurchaseKeyList = (ArrayList) dateEntry.getValue();
-                        break;
-                    }
-                } //perform the end bound only query{
-                else {
-                    if (dateKey.isBefore(endBound)) {
-                        datePurchaseKeyList = (ArrayList) dateEntry.getValue();
-                        break;
-                    }
-                }
-            }
-
+        if(QueryStoreName.getValue() != null && QueryStoreName.getValue().toString().equals("")){
+                QueryStoreName.setValue(null);
         }
-        //</editor-fold>
-
-        //Name subquery
-        //<editor-fold>
-        //Array list to hold the keys for purchaseHashMap
-        ArrayList itemNameKeyList = null;
-        //name subquery, does not execute if the parameter is not defined
-        if (qName != null) {
-            if (itemNameHashMap.containsKey(qName)) {
-                itemNameKeyList = (ArrayList) itemNameHashMap.get(qName);
-            }
+        if(QueryCategory.getValue() != null && QueryCategory.getValue().toString().equals("")){
+                QueryCategory.setValue(null);        
         }
-        //</editor-fold>
-
-        //Price subquery
-        //TODO: Maybe this might need to be a bounded search?
-        //<editor-fold>
-        ArrayList priceKeyList = null;
-        //price subquery, does not execute if the parameter is not defined
-        if (price != null) {
-            if (itemPriceHashMap.containsKey(price)) {
-                priceKeyList = (ArrayList) itemPriceHashMap.get(price);
-            }
-        }
-        //</editor-fold>
-
-        //Store name subquery
-        //<editor-fold>
-        ArrayList storeKeyList = null;
-        //price subquery, does not execute if the parameter is not defined
-        if (qStore != null) {
-            if (storeNameHashMap.containsKey(qStore)) {
-                storeKeyList = (ArrayList) storeNameHashMap.get(qStore);
-            }
-        }
-        //</editor-fold>
-
-        //Category subquery
-        //<editor-fold>
-        ArrayList categoryKeyList = null;
-        //category subquery, does not execute if the parameter is not defined
-        if (qCategory != null) {
-            if (categoryHashMap.containsKey(qCategory)) {
-                categoryKeyList = (ArrayList) categoryHashMap.get(qCategory);
-            }
-        }
-        //</editor-fold>
-
-        //After all of the subqueries, they all must be compared to see
-        //all of the matching purchase keys
-        //ArrayList to hold all of the subqueries that are not null
-        ArrayList purchaseKeySubList = new ArrayList<ArrayList>();
-        //ArrayList to hold all of the purchase keys that match all subqueries
-        ArrayList purchaseKeyList = new ArrayList<String>();
-
-        //start by find the smallest length list
-        if (datePurchaseKeyList != null) {
-            purchaseKeySubList.add(datePurchaseKeyList);
-        }
-        if (itemNameKeyList != null) {
-            purchaseKeySubList.add(itemNameKeyList);
-        }
-        if (priceKeyList != null) {
-            purchaseKeySubList.add(priceKeyList);
-        }
-        if (categoryKeyList != null) {
-            purchaseKeySubList.add(categoryKeyList);
-        }
-        if (storeKeyList != null) {
-            purchaseKeySubList.add(storeKeyList);
+        if(QueryItemName.getText() != null && QueryItemName.getText().toString().equals("")){
+                QueryItemName.setText(null); 
         }       
-
-        //Comparator class for ArrayList sort
-        class KeyListComparator implements Comparator<ArrayList> {
-
-            @Override
-            public int compare(ArrayList o1, ArrayList o2) {
-                if (o1.size() > o2.size()) {
-                    return 1;
-                } else {
-                    return (-1);
-                }
-            }
-
-        }
-        //the sorted list, descending
-        purchaseKeySubList.sort(new KeyListComparator());
         
-        //get the purchaseKeySublist size
-        int purchaseKeySubListSize = purchaseKeySubList.size();
+        queryResult  = purchaseData.query(QueryStartDate.getValue(), QueryEndDate.getValue().plusDays(1), 
+                QueryItemName.getText(), 
+                null, (StoreName) QueryStoreName.getValue(),
+                (PurchaseCategory) QueryCategory.getValue());
+       
         
-        //The max number of results is the number of items in the smallest list
-        int maxNumberOfResults;
-        if(purchaseKeySubList.size() == 0 ){
-            maxNumberOfResults = 0;
-        }else{
-            maxNumberOfResults  = ((ArrayList)purchaseKeySubList.get(0)).size();
-        }
-        //iterate through each element in the smallest list
-        for(int i = 0; i<maxNumberOfResults; i++){
-            //get the current purchase key that is being searched for
-            String currentPurchaseKey = (String)((ArrayList)purchaseKeySubList.get(0)).get(i);
+        if(queryResult.size() > 0){
+            //Sort the results based on date
+            mergeSortQuery(queryResult);
             
-            boolean matchFound = true;
+            /**
+             * Output info to the user, if applicable
+             */
             
-            //if one of the lists does not contain the key, then it doesn't fulfill the query
-            for(int k = 1; k<purchaseKeySubListSize; k++){
-                if(!((ArrayList)(purchaseKeySubList.get(k))).contains(currentPurchaseKey))
-                    matchFound = false;
-            }
-            
-            //if there is a key that all of the lists have, then add it to the purchaseKeyList
-            if(matchFound)
-                purchaseKeyList.add(currentPurchaseKey);
-        }
-            
-        //Get all of the purchases that match the keys purchaseKeyList
-        for(int j = 0; j<purchaseKeyList.size(); j++){
-            queryResults.add((Purchase)purchaseHashMap.get((String)purchaseKeyList.get(j)));
-        }
+            //Find the time span of the query
+            startDate = queryResult.get(0).getPurchaseDate();
+            endDate = queryResult.get(queryResult.size()-1).getPurchaseDate();
+            Period period = endDate.until(startDate.plusDays(1));
 
-        return queryResults;
+            TimeFrameLabel.setText("Time Frame: " + period.getDays() + " day(s)");
+            MeanPriceLabel.setText("Mean Price of Purchases: " + currencyFormat.format(sGen.meanPrice(queryResult)));
+            //If there are no store names in result query, use empty string in display
+            ModeStoreLabel.setText("Most Frequent Store: " + (sGen.modeStore(queryResult) == null? "" : sGen.modeStore(queryResult)));
+            //If there are no categories in result query, use empty string in display
+            ModeCategoryLabel.setText("Most Frequent Category: "  + (sGen.modeCategory(queryResult) == null? "" : sGen.modeCategory(queryResult)));
+            ModeItemLabel.setText("Most Frequent Item: " + sGen.modeItem(queryResult));                   
+            TotalPriceLabel.setText("Total Amount Spent: " + currencyFormat.format(sGen.getPurchaseSum()));
+        }
+        QueryItemNameList.getChildren().clear();
+        QueryDateList.getChildren().clear();
+        QueryPriceList.getChildren().clear();
+        QueryStoreNameList.getChildren().clear();
+        QueryCategoryList.getChildren().clear();
+        QueryDeleteList.getChildren().clear();
+        populateQueryList();        
     }
     
     /**
-     * Deletes a purchase from the record
-     * @param p the purchase to delete
+     * If used, the fifth drop-down box for StoreName and Category will set 
+     * all four  drop-down values for their respective parameter to the fifth's value
      */
-    public void deletePurchase(Purchase p){
-        String key = p.toString();
-        ArrayList check;
-        if(purchaseHashMap.containsKey(key)){
-            purchaseHashMap.remove(key);
-        }
-        
-        if(itemNameHashMap.containsKey(p.getItemName())){            
-            check = (ArrayList)itemNameHashMap.get(p.getItemName());
-            if(check.contains(p.toString())){
-                check.remove(p.toString());
-               ((ArrayList)itemNameHashMap.get(p.getItemName())).remove(p.toString());
-               if(check.size() == 0){
-                    itemNameHashMap.remove(p.getItemName());                   
-               }
-            }
-        }
-        
-        if(p.getPurchaseDate() != null && dateHashMap.containsKey(p.getPurchaseDate())){
-            check = (ArrayList)dateHashMap.get(p.getPurchaseDate());
-            if(check.contains(p.toString())){
-                check.remove(p.toString());
-               ((ArrayList)dateHashMap.get(p.getPurchaseDate())).remove(p.toString());
-               if(check.size() == 0){
-                    dateHashMap.remove(p.getItemName());                   
-               }
-            }
-        }
-        
-        if(p.getItemPrice() != null && itemPriceHashMap.containsKey(p.getItemPrice())){
-            check = (ArrayList)itemPriceHashMap.get(p.getItemPrice());
-            if(check.contains(p.toString())){
-                check.remove(p.toString());
-               ((ArrayList)itemPriceHashMap.get(p.getItemPrice())).remove(p.toString());
-               if(check.size() == 0){
-                    itemPriceHashMap.remove(p.getItemPrice());                   
-               }
-            }
-        }
-        
-       if(p.getStoreName() != null && storeNameHashMap.containsKey(p.getStoreName())){
-            check = (ArrayList)storeNameHashMap.get(p.getStoreName());
-            if(check.contains(p.toString())){
-                check.remove(p.toString());
-               ((ArrayList)storeNameHashMap.get(p.getStoreName())).remove(p.toString());
-               if(check.size() == 0){
-                    storeNameHashMap.remove(p.getStoreName());                   
-               }
-            }
-        }
-        
-         if(p.getPurchaseCategory() != null && purchaseHashMap.containsKey(p.getPurchaseCategory())){
-            check = (ArrayList)categoryHashMap.get(p.getPurchaseCategory());
-            if(check.contains(p.toString())){
-                check.remove(p.toString());
-               ((ArrayList)categoryHashMap.get(p.getPurchaseCategory())).remove(p.toString());
-               if(check.size() == 0){
-                    categoryHashMap.remove(p.getPurchaseCategory());                   
-               }
-            }
-        }
-         
+    @FXML
+    private void handleStoreNameAllAction(ActionEvent event){
+        AddStoreName1.setValue(AddStoreNameAll.getValue());
+        AddStoreName2.setValue(AddStoreNameAll.getValue());
+        AddStoreName3.setValue(AddStoreNameAll.getValue());
+        AddStoreName4.setValue(AddStoreNameAll.getValue());
+    }    
+    @FXML
+    private void handleCategoryAllAction(ActionEvent event){
+        AddCategory1.setValue(AddCategoryAll.getValue());
+        AddCategory2.setValue(AddCategoryAll.getValue());
+        AddCategory3.setValue(AddCategoryAll.getValue());
+        AddCategory4.setValue(AddCategoryAll.getValue());
     }
     
     /**
-     * Edits a purchase in a record, basically a swap.
-     * @param op the original purchase record
-     * @param np the new purchase record
+     * Changes the date, based on their choice in the calender, that the purchases are made on
+     * Clear the list for the purchases made for old date
      */
-    public void editPurchase(Purchase op, Purchase np){
-        deletePurchase(op);
-        addPurchase(np);
+    @FXML
+    private void handleAddChangeDateAction(ActionEvent event){
+        newDate = AddCalendar.getValue();
+        AddMessageDate.setText("Add New Items for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
+        AddPurchasesDateLabel.setText("All Purchases for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
+        AddDateList.getChildren().clear();
+        AddItemNameList.getChildren().clear();
+        AddPriceList.getChildren().clear();
+        AddStoreNameList.getChildren().clear();
+        AddCategoryList.getChildren().clear();
+        
+        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null,null);
+        TodayPurchasesList();
+    }
+    /**
+     * Takes the user to the add new purchase screen
+     */
+    @FXML
+    private void handleAddPurchaseMenuAction(ActionEvent event){
+        AddPurchasePane.setVisible(true);
+        CreateListPane.setVisible(false);
+        HomePane.setVisible(false);
+    }
+    /**
+     * Takes the user to the create list screen
+     */
+    @FXML
+    private void handleCreateListMenuAction(ActionEvent event){
+        AddPurchasePane.setVisible(false);
+        CreateListPane.setVisible(true);
+        HomePane.setVisible(false);
+    }
+    /**
+     * Closes the application
+     */
+    @FXML
+    private void handleCloseMenuAction(ActionEvent event){
+        Stage stage = (Stage) AddPurchasePane.getScene().getWindow();
+        stage.hide();        
+    }
+    @FXML
+    private void handleDeleteSelectedButtonAction(ActionEvent evnet){
+        getDeletedPurchases();
+        currentPurchases = purchaseData.query(null, null, null, null, null, null);
+        purchaseFile.SavePurchases(currentPurchases);
+        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null, null);
+        TodayPurchasesList();
+    }
+    
+    /**
+     * Starting point for the class
+     * Sets the current date
+     * Initalizes the values for Store Name and Category
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {   
+        
+        newDate = LocalDate.now();       
+        todayDate = LocalDate.now();    
+        purchaseData = new PurchaseData();
+        purchaseFile = new FileManager();
+        currentPurchases = purchaseFile.LoadPurchases();
+        for(int i =0; i < currentPurchases.size(); i++){
+            purchaseData.addPurchase((Purchase)currentPurchases.get(i));
+        }
+        currencyFormat = NumberFormat.getCurrencyInstance();
+        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null, null);
+        TodayPurchasesList();
+        UpcomingPurchases();        
+        AddMessageDate.setText("Add New Items for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());    
+        AddPurchasesDateLabel.setText("All Purchases for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
+        initAddItems();     
+    }    
+    /**
+     * Method to control the list of upcoming purchases
+     */
+    public void UpcomingPurchases(){
+        Day1Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()) + " (Today)");
+        Day1Text.setText("Milk\nBread\nBananas\nGas");
+       
+        todayDate = todayDate.plusDays(1);        
+        Day2Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));        
+        Day2Text.setText("Chicken\nBroccoli\nOranges\nT-Shirt");
+        
+        todayDate = todayDate.plusDays(1);        
+        Day3Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
+        Day3Text.setText("");
+        
+        todayDate = todayDate.plusDays(1);        
+        Day4Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
+        Day4Text.setText("Car Payment\nEggs\nApples");
+        
+        todayDate = todayDate.plusDays(1);        
+        Day5Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
+        Day5Text.setText("Steak\nSpaghetti\nRed Sauce");
+        
+        todayDate = todayDate.plusDays(1);        
+        Day6Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
+        Day6Text.setText("Candy");
+        
+        todayDate = todayDate.plusDays(1);        
+        Day7Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
+        todayDate = todayDate.now();
+        Day7Text.setText("Gas\nMilk");
+    }
+    
+    /**
+     * Initializes the values for Store Name and Category
+     */
+    public void initAddItems(){       
+        AddCategory1.getItems().addAll("", category.AUTOMOTIVE, category.CLOTHING, category.FOOD, category.ETC_DAILY, category.ETC_WEEKLY, category.ETC_MONTHLY, category.ETC_YEARLY, category.HOLIDAY,
+        category.LEISURE, category.TRAVEL);
+        AddCategory2.getItems().addAll("", category.AUTOMOTIVE, category.CLOTHING, category.FOOD, category.ETC_DAILY, category.ETC_WEEKLY, category.ETC_MONTHLY, category.ETC_YEARLY, category.HOLIDAY,
+        category.LEISURE, category.TRAVEL);
+        AddCategory3.getItems().addAll("", category.AUTOMOTIVE, category.CLOTHING, category.FOOD, category.ETC_DAILY, category.ETC_WEEKLY, category.ETC_MONTHLY, category.ETC_YEARLY, category.HOLIDAY,
+        category.LEISURE, category.TRAVEL);
+        AddCategory4.getItems().addAll("", category.AUTOMOTIVE, category.CLOTHING, category.FOOD, category.ETC_DAILY, category.ETC_WEEKLY, category.ETC_MONTHLY, category.ETC_YEARLY, category.HOLIDAY,
+        category.LEISURE, category.TRAVEL);
+        AddCategoryAll.getItems().addAll("", category.AUTOMOTIVE, category.CLOTHING, category.FOOD, category.ETC_DAILY, category.ETC_WEEKLY, category.ETC_MONTHLY, category.ETC_YEARLY, category.HOLIDAY,
+        category.LEISURE, category.TRAVEL);
+        QueryCategory.getItems().addAll("", category.AUTOMOTIVE, category.CLOTHING, category.FOOD, category.ETC_DAILY, category.ETC_WEEKLY, category.ETC_MONTHLY, category.ETC_YEARLY, category.HOLIDAY,
+        category.LEISURE, category.TRAVEL);
+        
+        AddStoreName1.getItems().addAll("", storeName.AMAZON, storeName.HARRIS_TEETER, storeName.SHEETZ, storeName.TARGET, storeName.WALMART);
+        AddStoreName2.getItems().addAll("", storeName.AMAZON, storeName.HARRIS_TEETER, storeName.SHEETZ, storeName.TARGET, storeName.WALMART);
+        AddStoreName3.getItems().addAll("", storeName.AMAZON, storeName.HARRIS_TEETER, storeName.SHEETZ, storeName.TARGET, storeName.WALMART);
+        AddStoreName4.getItems().addAll("", storeName.AMAZON, storeName.HARRIS_TEETER, storeName.SHEETZ, storeName.TARGET, storeName.WALMART);
+        AddStoreNameAll.getItems().addAll("", storeName.AMAZON, storeName.HARRIS_TEETER, storeName.SHEETZ, storeName.TARGET, storeName.WALMART);        
+        QueryStoreName.getItems().addAll("", storeName.AMAZON, storeName.HARRIS_TEETER, storeName.SHEETZ, storeName.TARGET, storeName.WALMART);
+    }
+    
+    /**
+     * Method to add a new Purchase
+     * 
+     * @param name
+     * @param price
+     * @param store
+     * @param cat 
+     */
+    public void addNewPurchase(String name, Double price, StoreName store, PurchaseCategory cat){           
+        newPurchase = new Purchase(name, newDate, price, store, cat);
+        purchaseData.addPurchase(newPurchase);
+    }
+    
+    private void TodayPurchasesList(){
+        AddDateList.getChildren().clear();
+        AddItemNameList.getChildren().clear();
+        AddPriceList.getChildren().clear();
+        AddStoreNameList.getChildren().clear();
+        AddCategoryList.getChildren().clear();
+        
+        for(int i =0; i < todayPurchases.size(); i ++){
+            AddDateList.getChildren().add(new Label(todayPurchases.get(i).getPurchaseDate().toString()));
+            AddItemNameList.getChildren().add(new Label(todayPurchases.get(i).getItemName().toString()));            
+            if(todayPurchases.get(i).getItemPrice() == null){
+                AddPriceList.getChildren().add(new Label(""));
+            }else{
+                AddPriceList.getChildren().add(new Label(todayPurchases.get(i).getItemPrice().toString()));
+            }
+            
+            if(todayPurchases.get(i).getStoreName() == null){
+                AddStoreNameList.getChildren().add(new Label(""));  
+            }else{
+                AddStoreNameList.getChildren().add(new Label(todayPurchases.get(i).getStoreName().toString()));                
+            }
+            
+            if(todayPurchases.get(i).getPurchaseCategory() == null){
+                AddCategoryList.getChildren().add(new Label(""));
+            }else{
+                AddCategoryList.getChildren().add(new Label(todayPurchases.get(i).getPurchaseCategory().toString()));                
+            }
+        }
+    }
+    
+    /**
+     * Updates the list that keep track of the purchases made today in a top down fashion
+     */
+    private void AddNewTodayPurchaseList() {
+        VBox tempBox = new VBox();
+        
+        for(int i = 0; i < 4; i++){
+            /**
+             * If the purchase does not have a name, do not add to list
+             */
+            if(AddItemNameArray[i].getText().equals(""))
+                continue;
+                      
+            tempBox.getChildren().addAll(AddDateList.getChildren());
+            AddDateList.getChildren().clear();
+            AddDateList.getChildren().addAll(new Label(newDate.toString()));             
+            AddDateList.getChildren().addAll(tempBox.getChildren());        
+            tempBox.getChildren().clear();
+                          
+            tempBox.getChildren().addAll(AddItemNameList.getChildren());
+            AddItemNameList.getChildren().clear();
+            AddItemNameList.getChildren().addAll(new Label(AddItemNameArray[i].getText()));
+            AddItemNameList.getChildren().addAll(tempBox.getChildren());        
+            tempBox.getChildren().clear();
+            
+            
+            tempBox.getChildren().addAll(AddPriceList.getChildren());
+            AddPriceList.getChildren().clear();
+            if(AddPriceArray[i].getText() == null || AddPriceArray[i].getText().equals("")){
+                AddPriceList.getChildren().addAll(new Label(""));                
+            }else{
+                AddPriceList.getChildren().addAll(new Label(currencyFormat.format(Double.parseDouble(AddPriceArray[i].getText()))));
+            }
+            AddPriceList.getChildren().addAll(tempBox.getChildren());        
+            tempBox.getChildren().clear();         
+           
+            tempBox.getChildren().addAll(AddStoreNameList.getChildren());
+            AddStoreNameList.getChildren().clear();
+            if(AddStoreNameArray[i] == (null) || AddStoreNameArray[i].getValue() == (null)){   
+                 AddStoreNameList.getChildren().addAll(new Label(""));      
+            }else{
+                 AddStoreNameList.getChildren().addAll(new Label(AddStoreNameArray[i].getValue().toString()));
+            }
+            AddStoreNameList.getChildren().addAll(tempBox.getChildren());        
+            tempBox.getChildren().clear();   
+            
+            tempBox.getChildren().addAll(AddCategoryList.getChildren());
+            AddCategoryList.getChildren().clear();            
+            if(AddCategoryArray[i] == (null) || AddCategoryArray[i].getValue() == (null)){      
+                 AddCategoryList.getChildren().addAll(new Label(""));      
+            }else{
+                AddCategoryList.getChildren().addAll(new Label(AddCategoryArray[i].getValue().toString()));
+            }
+            AddCategoryList.getChildren().addAll(tempBox.getChildren());        
+            tempBox.getChildren().clear();           
+        }   
+    }
+    
+    /**
+     * Clears all the parameters when the Add Items button has been clicked
+     */
+    private void clearFields(){
+        for(int i =0; i < 4; i++){
+            AddItemNameArray[i].setText("");
+            AddPriceArray[i].setText("");
+            AddStoreNameArray[i].setValue(null);
+            AddCategoryArray[i].setValue(null);
+        }
+        AddStoreNameAll.setValue(null);
+        AddCategoryAll.setValue(null);
+    }
+    
+    /**
+     * Merge sort to sort the results of the query by date
+     * Most recent date appears first in the list
+     */
+    private ArrayList<Purchase> mergeSortQuery(ArrayList<Purchase> list){
+        ArrayList<Purchase> left = new ArrayList<Purchase>();
+        ArrayList<Purchase> right = new ArrayList<Purchase>();
+        int center;
+        
+        if(list.size() <= 1)
+            return list;
+        else{
+            center = list.size()/2;
+            for(int i =0; i < center; i ++){
+                left.add(list.get(i));
+            }
+            for(int i=center; i <list.size(); i++){
+                right.add(list.get(i));
+            }
+            left = mergeSortQuery(left);
+            right = mergeSortQuery(right);
+            
+            mergeQuery(left, right, list);        
+        }
+        return list;  
+    }
+    
+    private void mergeQuery(ArrayList<Purchase> left, ArrayList<Purchase> right, ArrayList<Purchase> list){
+        int leftIndex = 0;
+        int rightIndex = 0;
+        int listIndex = 0;
+        
+        while(leftIndex < left.size() && rightIndex < right.size()){
+            if((left.get(leftIndex).getPurchaseDate()).isAfter(right.get(rightIndex).getPurchaseDate())){
+                list.set(listIndex, left.get(leftIndex));
+                leftIndex++;
+            }
+            else{
+                list.set(listIndex, right.get(rightIndex));
+                rightIndex++;
+            }
+            listIndex++;
+        }
+        if(leftIndex >= left.size()){
+            for(int i = rightIndex; i < right.size(); i++){
+                list.set(listIndex, right.get(i));
+                listIndex++;
+            }
+        }
+        else{
+            for(int i = leftIndex; i < left.size(); i++){
+                list.set(listIndex, left.get(i));
+                listIndex++;
+            }
+        }
+    }
+    
+    /**
+     * Populates the list for the create a list query
+     */
+    private void populateQueryList() {
+                
+        QueryDeleteList.getChildren().clear();
+        QueryDateList.getChildren().clear();
+        QueryItemNameList.getChildren().clear();
+        QueryPriceList.getChildren().clear();
+        QueryStoreNameList.getChildren().clear();
+        QueryCategoryList.getChildren().clear();
+        
+        for(int i =0; i < queryResult.size(); i ++){
+            QueryDeleteList.getChildren().add(new CheckBox());
+            QueryDateList.getChildren().add(new Label(queryResult.get(i).getPurchaseDate().toString()));
+            QueryItemNameList.getChildren().add(new Label(queryResult.get(i).getItemName().toString()));            
+            if(queryResult.get(i).getItemPrice() == null){
+                QueryPriceList.getChildren().add(new Label(""));
+            }else{
+                QueryPriceList.getChildren().add(new Label((currencyFormat.format(queryResult.get(i).getItemPrice()).toString())));
+            }
+            
+            if(queryResult.get(i).getStoreName() == null){
+                QueryStoreNameList.getChildren().add(new Label(""));  
+            }else{
+                QueryStoreNameList.getChildren().add(new Label(queryResult.get(i).getStoreName().toString()));                
+            }
+            
+            if(queryResult.get(i).getPurchaseCategory() == null){
+                QueryCategoryList.getChildren().add(new Label(""));
+            }else{
+                QueryCategoryList.getChildren().add(new Label(queryResult.get(i).getPurchaseCategory().toString()));                
+            }
+        }
+    }
+    
+    private void getDeletedPurchases(){
+        List<Node> deletePurchases = new ArrayList<Node>();
+        ObservableList<Node> observableList = FXCollections.observableList(deletePurchases);
+        observableList.addAll(QueryDeleteList.getChildren());            
+        
+        for(int i =0; i < observableList.size(); i++){
+            if(((CheckBox)observableList.get(i)).isSelected()){
+                purchaseData.deletePurchase((Purchase)queryResult.get(i));
+                queryResult.remove(i);
+                queryResult.add(i, null);
+            }
+        }
+        
+        while(queryResult.contains(null)){
+            queryResult.remove(null);
+        }
+        
+        populateQueryList();
     }
 }
