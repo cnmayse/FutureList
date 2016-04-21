@@ -1,4 +1,4 @@
-package shopping.list.csc340.project2;
+package ShoppingListPackage;
 /**
  * This class is used to represent a purchase.
  * 
@@ -8,9 +8,10 @@ package shopping.list.csc340.project2;
  * @version Purchase v1.0.0
  */
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Purchase {
+public class Purchase implements Serializable {
     //Fields
      private String itemName;
      private LocalDate purchaseDate;
