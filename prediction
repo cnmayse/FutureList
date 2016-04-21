@@ -1,0 +1,67 @@
+ public LocalDate predictPurchases(String item) {
+        LocalDate date1 = new LocalDate();
+        LocalDate date2 = new LocalDate();
+        LocalDate predictedDate = new LocalDate();
+        date1 = LocalDate.ofEpochDay(0);
+        date2 = LocalDate.ofEpochDay(0);
+        predictedDate = LocalDate.ofEpochDay(0);
+        
+        //Iterates through data struct to find two most recent purchase dates for an item.
+        for (int i = 0; i < purchaseHolder.size(); i++) {
+            if (purchaseHolder.get(i).getItemName().equals(item)) {
+                if (largerDate(date2, purchaseHolder.get(i).getPurchaseDate())) {
+                    date1 = date2;
+                    date2 = purchaseHolder.get(i).getPurchaseDate();
+                }
+                else if (largerDate(date1, purchaseHolder.get(i).getPurchaseDate())){
+                    date1 = purchaseHolder.get(i).getPurchaseDate();
+                }
+            }
+        }
+        
+        //Returns the difference in days of the two dates
+        int dif = differenceInDays(date1, date2);
+        
+        //If date1 is not updated from its default val, dif is 0 because cannot predict off one purchase
+        if (date1.equals(LocalDate.ofEpochDay(0)){dif = 0;}
+        
+        //Adds dif to the highest date to predict next purchase date
+        predictedDate = date2.plusDays(dif);
+        
+        return predictedDate;
+        
+    }
+
+    //Compares two dates. If true is returned, date 2 is larger. If false is returned, date1 is larger.
+    public boolean largerDate(LocalDate date1, LocalDate date2) {
+        if (date2.getYear() > date1.getYear()) {
+            return true;
+        } else if (date1.getYear() > date2.getYear()) {
+            return false;
+        }
+
+        if (date2.getMonthOfYear() > date1.getMonthOfYear()) {
+            return true;
+        } else if (date1.getMonthOfYear() > date2.getMonthOfYear()) {
+            return false;
+        }
+
+        if (date2.DayOfYear() > date1.DayOfYear()) {
+            return true;
+        } else if (date1.DayOfYear() > date2.DayOfYear()) {
+            return false;
+        }
+
+        return true;
+    }
+    
+    //Calculates the difference in days between two dates. Year values are multiplied by 365 in order to convert to days,
+    //And years are also modded'd by 4 in order to add days that are in leap years.
+    public int differenceInDays(LocalDate date1, LocalDate date2) {
+        int days = date2.getDayOfYear() - date1.getDayOfYear();
+        int years = date2.getYear() - date1.getYear();
+
+        days = days + (365 * years) + (years / 4);
+
+        return days;
+    }
