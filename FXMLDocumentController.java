@@ -129,8 +129,11 @@ public class FXMLDocumentController implements Initializable {
         if(QueryItemName.getText() != null && QueryItemName.getText().toString().equals("")){
                 QueryItemName.setText(null); 
         }       
+       
         
-        queryResult  = purchaseData.query(QueryStartDate.getValue(), QueryEndDate.getValue().plusDays(1), 
+        queryResult  = purchaseData.query(
+                QueryStartDate.getValue() ==null? null : QueryStartDate.getValue().minusDays(1), 
+                QueryEndDate.getValue() == null? null :  QueryEndDate.getValue().plusDays(1), 
                 QueryItemName.getText(), 
                 null, (StoreName) QueryStoreName.getValue(),
                 (PurchaseCategory) QueryCategory.getValue());
