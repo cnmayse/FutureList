@@ -1,10 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package shopping.list.csc340.project2;
+package ShoppingListPackage;
 
 import java.net.URL;
 import java.text.NumberFormat;
@@ -30,7 +24,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- *
+ * This is the controller class for the GUI
+ * 
  * @author Matthew Yengle
  */
 public class FXMLDocumentController implements Initializable {
@@ -64,7 +59,8 @@ public class FXMLDocumentController implements Initializable {
     private ArrayList<Purchase> todayPurchases;
     private StatisticGenerator sGen;
     private NumberFormat currencyFormat;
-    
+    private FileManager purchaseFile;
+    ArrayList<Purchase> currentPurchases;
     /**
      * This method handles when the "Add Items" button is clicked 
      */
@@ -105,6 +101,8 @@ public class FXMLDocumentController implements Initializable {
          * Populate the entries for the List of Purchases made today and clear the parameters
          */
         AddNewTodayPurchaseList();
+        currentPurchases = purchaseData.query(null, null, null, null, null, null);
+        purchaseFile.SavePurchases(currentPurchases);
         clearFields();
      
     }
@@ -132,10 +130,11 @@ public class FXMLDocumentController implements Initializable {
                 QueryItemName.setText(null); 
         }       
         
-        queryResult  = purchaseData.query(QueryStartDate.getValue(), QueryEndDate.getValue(), 
+        queryResult  = purchaseData.query(QueryStartDate.getValue(), QueryEndDate.getValue().plusDays(1), 
                 QueryItemName.getText(), 
                 null, (StoreName) QueryStoreName.getValue(),
                 (PurchaseCategory) QueryCategory.getValue());
+       
         
         if(queryResult.size() > 0){
             //Sort the results based on date
@@ -234,6 +233,10 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private void handleDeleteSelectedButtonAction(ActionEvent evnet){
         getDeletedPurchases();
+        currentPurchases = purchaseData.query(null, null, null, null, null, null);
+        purchaseFile.SavePurchases(currentPurchases);
+        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null, null);
+        TodayPurchasesList();
     }
     
     /**
@@ -242,12 +245,18 @@ public class FXMLDocumentController implements Initializable {
      * Initalizes the values for Store Name and Category
      */
     @Override
-    public void initialize(URL url, ResourceBundle rb) {                              
+    public void initialize(URL url, ResourceBundle rb) {   
+        
         newDate = LocalDate.now();       
         todayDate = LocalDate.now();    
         purchaseData = new PurchaseData();
+        purchaseFile = new FileManager();
+        currentPurchases = purchaseFile.LoadPurchases();
+        for(int i =0; i < currentPurchases.size(); i++){
+            purchaseData.addPurchase((Purchase)currentPurchases.get(i));
+        }
         currencyFormat = NumberFormat.getCurrencyInstance();
-        todayPurchases = purchaseData.query(newDate, newDate, null, null, null, null);
+        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null, null);
         TodayPurchasesList();
         UpcomingPurchases();        
         AddMessageDate.setText("Add New Items for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());    
@@ -383,9 +392,8 @@ public class FXMLDocumentController implements Initializable {
             
             tempBox.getChildren().addAll(AddPriceList.getChildren());
             AddPriceList.getChildren().clear();
-            if(AddPriceArray[i].getText() == null){
-                AddPriceList.getChildren().addAll(new Label(""));
-                
+            if(AddPriceArray[i].getText() == null || AddPriceArray[i].getText().equals("")){
+                AddPriceList.getChildren().addAll(new Label(""));                
             }else{
                 AddPriceList.getChildren().addAll(new Label(currencyFormat.format(Double.parseDouble(AddPriceArray[i].getText()))));
             }
