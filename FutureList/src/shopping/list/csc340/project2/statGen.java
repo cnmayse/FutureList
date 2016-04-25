@@ -1,6 +1,6 @@
 package shopping.list.csc340.project2;
 import java.util.*;
-import java.util.Map.Entry;
+import java.time.*;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -23,44 +23,59 @@ public class statGen {
         return mean;
     }
     
-    public static String modeStore(ArrayList<Purchase> serries){
-       throw new UnsupportedOperationException();
-     //   Purchase[] sarr =serries.toArray();
-        int max=1, count=0;
+    public static StoreName modeStore(ArrayList<Purchase> serries){
+       // throw new UnsupportedOperationException();
+       int max=0;
         StoreName temp;
-       // List<String> theList = Arrays.asList(sarr);
-        HashMap<Purchase,Integer> serhm =new HashMap<Purchase,Integer>();
+        List<StoreName> theList = new ArrayList<StoreName>();
+        Map<StoreName,Integer> serhm =new HashMap<StoreName,Integer>();
         for (int i = 0; i < serries.size(); i++) {
             temp = serries.get(i).getStoreName();
             if (serhm.containsKey(temp)) {
                 serhm.put(temp, serhm.get(temp)+1);
             }
             else{
-                serhm.put(tempstr,1);
+                serhm.put(temp,1);
             }
-            if (max < count){
-                max = count;
+            if (serhm.get(temp) > max){
+                max = serhm.get(temp);
+                theList.clear();
+                theList.add(temp);
+            } else if (serhm.get(temp) == max){
+                theList.add(temp);
             }
-        }
-        for (Entry<String, Integer> entry: serhm.entrySet()) {
-            if (max == entry.getValue()){
-                return entry.getKey();
-            }
-            
-        }
-        return null;
-        
-        
+        }    
+        return theList.get(0);
     }
-    public static String modeCatagory(ArrayList<Purchase> serries){
-        throw new UnsupportedOperationException();
+    public static PurchaseCategory modeCategory(ArrayList<Purchase> serries){
+        int max=0;
+        PurchaseCategory temp;
+        List<PurchaseCategory> theList = new ArrayList<PurchaseCategory>();
+        Map<PurchaseCategory,Integer> serhm =new HashMap<PurchaseCategory,Integer>();
+        for (int i = 0; i < serries.size(); i++) {
+            temp = serries.get(i).getPurchaseCategory();
+            if (serhm.containsKey(temp)) {
+                serhm.put(temp, serhm.get(temp)+1);
+            }
+            else{
+                serhm.put(temp,1);
+            }
+            if (serhm.get(temp) > max){
+                max = serhm.get(temp);
+                theList.clear();
+                theList.add(temp);
+            } else if (serhm.get(temp) == max){
+                theList.add(temp);
+            }
+        }    
+        return theList.get(0);
     }
     public static String modeItem(ArrayList<Purchase> serries){
-       // throw new UnsupportedOperationException();
+       //throw new UnsupportedOperationException();
         int max=0;
         String tempstr;
         List<String> theList = new ArrayList<String>();
-        HashMap<String,Integer> serhm =new HashMap<String,Integer>();
+        Map<String,Integer> serhm =new HashMap<String,Integer>();
         for (int i = 0; i < serries.size(); i++) {
             tempstr = serries.get(i).getItemName();
             if (serhm.containsKey(tempstr)) {
@@ -69,25 +84,56 @@ public class statGen {
             else{
                 serhm.put(tempstr,1);
             }
-            if (max < count){
-                max = count;
+            if (serhm.get(tempstr) > max){
+                max = serhm.get(tempstr);
+                theList.clear();
+                theList.add(tempstr);
+            } else if (serhm.get(tempstr) == max){
+                theList.add(tempstr);
+            }
+        }    
+        return theList.get(0);
+    }
+    public static ArrayList<Purchase> predict(ArrayList<Purchase> series, String itemname){
+        /**
+         * 1. Traverses through to calculate the average distance between days someone purchases an item
+         * 2. Creates an arraylist of future dates with the average interval two to 3 times in advaced with the price 
+         */
+        LocalDate baseDate;
+        Integer baseInt;
+        List<LocalDate> dateSet = new ArrayList<LocalDate>();
+        List<Integer> timeInt = new ArrayList<Integer>();
+        for (int i = 0; i < series.size(); i++) {
+            if (series.get(i).getItemName().equalsIgnoreCase(itemname)){
+                dateSet.add(series.get(i).getPurchaseDate());
             }
         }
-        for (Entry<String, Integer> entry: serhm.entrySet()) {
-            if (max == entry.getValue()){
-                return entry.getKey();
-            }
-        
-        
-        }    
-        return "abc you fail";
+        baseDate = Collections.min(dateSet);
+        baseInt = baseDate.getDayOfYear();
+        for (int i = 0; i < dateSet.size(); i++) {
+            timeInt.add((Integer)dateSet.get(i).getDayOfYear() - baseInt);
+            baseInt = dateSet.get(i).getDayOfYear();
+            
+        }
+        int timeMean = sum(timeInt)/ timeInt.size();
+        System.out.println("Timemean is : "+ timeMean);
+        series.clear();
+        for (int i = 0; i < 4; i++) {
+            long solution = timeMean * i;
+            series.add(new Purchase(itemname, Collections.max(dateSet).plusDays(solution), 0.0, StoreName.AMAZON, PurchaseCategory.ETC_WEEKLY));
+        }
+        for (int i = 0; i < series.size(); i++) {
+            System.out.println(series.get(i).getPurchaseDate());
+        }
+        return series;
+        //throw new UnsupportedOperationException();
     }
-    public static ArrayList predict(ArrayList<Purchase> serries){
-        /**
-         * 1. Recives a list of arrays along with empty spaces for prediction in x days in advance 
-         * 2. Turn those purchases into data points
-         * 3. Feed those data points 
-         */
-        throw new UnsupportedOperationException();
+    
+    private static int sum(List<Integer> bunch){
+        int sum = 0;
+        for (int i = 0; i < bunch.size(); i++) {
+            sum += bunch.get(i);
+        }
+        return sum;
     }
 }
