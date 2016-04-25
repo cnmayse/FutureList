@@ -116,9 +116,8 @@ public class statGen {
             
         }
         int timeMean = sum(timeInt)/ timeInt.size();
-        System.out.println("Timemean is : "+ timeMean);
         series.clear();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 1; i < 4; i++) {
             long solution = timeMean * i;
             series.add(new Purchase(itemname, Collections.max(dateSet).plusDays(solution), 0.0, StoreName.AMAZON, PurchaseCategory.ETC_WEEKLY));
         }
@@ -126,7 +125,6 @@ public class statGen {
             System.out.println(series.get(i).getPurchaseDate());
         }
         return series;
-        //throw new UnsupportedOperationException();
     }
     
     private static int sum(List<Integer> bunch){
@@ -136,4 +134,69 @@ public class statGen {
         }
         return sum;
     }
+    public static ArrayList<Purchase> predict(ArrayList<Purchase> series, String itemname,PurchaseCategory freq){
+        LocalDate recentDate;
+        List<LocalDate> dateSet = new ArrayList<LocalDate>();
+        List<Integer> timeInt = new ArrayList<Integer>();
+        switch (freq){
+            case ETC_YEARLY: 
+                 for (int i = 0; i < series.size(); i++) {
+                     if (series.get(i).getItemName().equalsIgnoreCase(itemname)){
+                          dateSet.add(series.get(i).getPurchaseDate());
+                     }
+                 }
+                 recentDate = Collections.max(dateSet);
+                series.clear();
+                for (int i = 1; i < 4; i++) {
+                  series.add(new Purchase(itemname, Collections.max(dateSet).plusYears(i), 0.0, StoreName.AMAZON, PurchaseCategory.ETC_YEARLY));
+                }
+                break;
+            case ETC_MONTHLY:
+                for (int i = 0; i < series.size(); i++) {
+                     if (series.get(i).getItemName().equalsIgnoreCase(itemname)){
+                          dateSet.add(series.get(i).getPurchaseDate());
+                     }
+                 }
+                 recentDate = Collections.max(dateSet);
+                series.clear();
+                for (int i = 1; i < 4; i++) {
+                  series.add(new Purchase(itemname, Collections.max(dateSet).plusMonths(i), 0.0, StoreName.AMAZON, PurchaseCategory.ETC_MONTHLY));
+                }
+                break;
+            case ETC_WEEKLY:
+                for (int i = 0; i < series.size(); i++) {
+                     if (series.get(i).getItemName().equalsIgnoreCase(itemname)){
+                          dateSet.add(series.get(i).getPurchaseDate());
+                     }
+                 }
+                 recentDate = Collections.max(dateSet);
+                series.clear();
+                for (int i = 1; i < 4; i++) {
+                  series.add(new Purchase(itemname, Collections.max(dateSet).plusWeeks(i), 0.0, StoreName.AMAZON, PurchaseCategory.ETC_WEEKLY));
+                }
+                break;
+            case ETC_DAILY:
+                for (int i = 0; i < series.size(); i++) {
+                     if (series.get(i).getItemName().equalsIgnoreCase(itemname)){
+                          dateSet.add(series.get(i).getPurchaseDate());
+                     }
+                 }
+                 recentDate = Collections.max(dateSet);
+                series.clear();
+                for (int i = 1; i < 4; i++) {
+                  series.add(new Purchase(itemname, Collections.max(dateSet).plusDays(i), 0.0, StoreName.AMAZON, PurchaseCategory.ETC_DAILY));
+                }
+                break;
+            default: break; 
+        }
+            return series;
+        
+      //  return series;
+    }
+
+
+
+
+
+
 }
