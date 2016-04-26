@@ -41,7 +41,8 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private VBox AddDateList, AddItemNameList, AddPriceList, AddStoreNameList, AddCategoryList, QueryItemNameList, QueryDateList, QueryPriceList, QueryStoreNameList, QueryCategoryList, QueryDeleteList;
     @FXML
-    private Label AddMessageDate, Day1Date, Day1Text, Day2Date, Day2Text, Day3Date, Day3Text, Day4Date, Day4Text, Day5Date, Day5Text, Day6Date, Day6Text, Day7Date, Day7Text, MeanPriceLabel, ModeStoreLabel, TotalPriceLabel, ModeCategoryLabel, ModeItemLabel, TimeFrameLabel, AddPurchasesDateLabel;
+    private Label AddMessageDate, Day1Date, Day1Text, Day2Date, Day2Text, Day3Date, Day3Text, Day4Date, Day4Text, Day5Date,
+            Day5Text, Day6Date, Day6Text, Day7Date, Day7Text, MeanPriceLabel, ModeStoreLabel, TotalPriceLabel, ModeCategoryLabel, ModeItemLabel, TimeFrameLabel, AddPurchasesDateLabel, QueryResultsLabel;
     @FXML
     private Pane AddPurchasePane, CreateListPane, HomePane; 
         
@@ -140,6 +141,7 @@ public class FXMLDocumentController implements Initializable {
                 (PurchaseCategory) QueryCategory.getValue());
        
         
+        QueryResultsLabel.setText(queryResult.size() + " result(s)");
         
         if(queryResult.size() > 0){
             //Sort the results based on date
@@ -152,8 +154,7 @@ public class FXMLDocumentController implements Initializable {
             //Find the time span of the query
             startDate = queryResult.get(0).getPurchaseDate();
             endDate = queryResult.get(queryResult.size()-1).getPurchaseDate();
-            Period period = startDate.until(endDate);
-
+            Period period = startDate.until(endDate.plusDays(1));
             TimeFrameLabel.setText("Time Frame: " + period.getDays() + " day(s)");
             MeanPriceLabel.setText("Mean Price of Purchases: " + currencyFormat.format(sGen.meanPrice(queryResult)));
             //If there are no store names in result query, use empty string in display
@@ -162,6 +163,14 @@ public class FXMLDocumentController implements Initializable {
             ModeCategoryLabel.setText("Most Frequent Category: "  + (sGen.modeCategory(queryResult) == null? "" : sGen.modeCategory(queryResult)));
             ModeItemLabel.setText("Most Frequent Item: " + sGen.modeItem(queryResult));                   
             TotalPriceLabel.setText("Total Amount Spent: " + currencyFormat.format(sGen.getPurchaseSum()));
+        }else{
+            //Set all fields to default text
+            TimeFrameLabel.setText("Time Frame: ");
+            MeanPriceLabel.setText("Mean Price of Purchases: ");
+            ModeStoreLabel.setText("Most Frequent Store: ");
+            ModeCategoryLabel.setText("Most Frequent Category: ");
+            ModeItemLabel.setText("Most Frequent Item: ");                   
+            TotalPriceLabel.setText("Total Amount Spent: ");
         }
         QueryItemNameList.getChildren().clear();
         QueryDateList.getChildren().clear();
@@ -217,6 +226,9 @@ public class FXMLDocumentController implements Initializable {
         AddPurchasePane.setVisible(true);
         CreateListPane.setVisible(false);
         HomePane.setVisible(false);
+        
+        todayPurchases = purchaseData.query(newDate, newDate, null, null, null, null);
+        TodayPurchasesList();
     }
     /**
      * Takes the user to the create list screen
@@ -237,11 +249,12 @@ public class FXMLDocumentController implements Initializable {
     }
     @FXML
     private void handleDeleteSelectedButtonAction(ActionEvent evnet){
+        //if(QueryItemNameList.getChildren()){
+            
+       // }
         getDeletedPurchases();
         currentPurchases = purchaseData.query(null, null, null, null, null, null);
         purchaseFile.SavePurchases(currentPurchases);
-        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null, null);
-        TodayPurchasesList();
         UpcomingPurchases();
     }
     
@@ -276,8 +289,14 @@ public class FXMLDocumentController implements Initializable {
      */
     public void UpcomingPurchases(){
         ArrayList<String> itemNameArr = purchaseData.getPurchaseItemName();
+        for(int i =0;i < itemNameArr.size(); i ++){
+            System.out.println(i + "Item Name: " + itemNameArr.get(i));
+        }
         
         ArrayList<Purchase> PurchasesArr = mergeSortQuery(purchaseData.query(null, null, null, null, null, null));
+        for(int i=0; i < PurchasesArr.size(); i ++){
+            System.out.println(i + "PUrchase Item Name: " + PurchasesArr.get(i).getItemName());
+        }
         Purchase predictPurchases ;
           
         Day1Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()) + " (Today)");
@@ -309,7 +328,9 @@ public class FXMLDocumentController implements Initializable {
         Day7Text.setText("");
         
         for(int i =0; i < itemNameArr.size(); i ++){            
-            predictPurchases = sGen.predict(PurchasesArr, itemNameArr.get(i));            
+            predictPurchases = sGen.predict(PurchasesArr, itemNameArr.get(i));   
+            
+            
             
             if(predictPurchases == null){
                 continue;
