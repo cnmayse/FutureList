@@ -21,11 +21,6 @@
                         <MenuItem mnemonicParsing="false" onAction="#handleCloseMenuAction" text="Close" />
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Help">
-                  <items>
-                    <MenuItem mnemonicParsing="false" text="About" />
-                  </items>
-                </Menu>
               </menus>
             </MenuBar>
          </top>
@@ -142,7 +137,26 @@
                         <Text layoutX="49.0" layoutY="88.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Record purchases for the date listed above. All fields are optional except for the Item Name." />
                      </children>
                   </Pane>
-                  <Pane fx:id="CreateListPane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;" visible="false">
+                  <Pane fx:id="HomePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;" visible="false">
+                     <children>
+                        <Label alignment="CENTER" layoutX="208.0" layoutY="50.0" text="Welcome to the &#10;Shopping List of the Future" textAlignment="CENTER">
+                           <font>
+                              <Font size="36.0" />
+                           </font>
+                        </Label>
+                        <Button layoutX="241.0" layoutY="222.0" mnemonicParsing="false" onAction="#handleAddPurchaseMenuAction" text="Add New&#10;Purchases&#10;" textAlignment="CENTER">
+                           <font>
+                              <Font size="24.0" />
+                           </font>
+                        </Button>
+                        <Button layoutX="460.0" layoutY="222.0" mnemonicParsing="false" onAction="#handleCreateListMenuAction" text="Manage&#10;Purchases&#10;" textAlignment="CENTER">
+                           <font>
+                              <Font size="24.0" />
+                           </font>
+                        </Button>
+                     </children>
+                  </Pane>
+                  <Pane fx:id="CreateListPane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;">
                      <children>
                         <Label layoutX="22.0" layoutY="14.0" text="Manage Purchases">
                            <font>
@@ -228,33 +242,15 @@
                               </HBox>
                            </content>
                         </ScrollPane>
-                        <Label fx:id="TotalPriceLabel" layoutX="445.0" layoutY="585.0" text="Total Amount Spent:" />
-                        <Label fx:id="TimeFrameLabel" layoutX="229.0" layoutY="528.0" text="Time Frame:" />
-                        <Label fx:id="ModeItemLabel" layoutX="229.0" layoutY="556.0" text="Most Frequent Item:" />
-                        <Label fx:id="ModeStoreLabel" layoutX="229.0" layoutY="585.0" text="Most Frequent Store:" />
-                        <Label fx:id="ModeCategoryLabel" layoutX="229.0" layoutY="613.0" text="Most Frequent Category:" />
+                        <Label fx:id="TotalPriceLabel" layoutX="444.0" layoutY="614.0" text="Total Amount Spent:" />
+                        <Label fx:id="TimeFrameLabel" layoutX="227.0" layoutY="559.0" text="Time Frame:" />
+                        <Label fx:id="ModeItemLabel" layoutX="229.0" layoutY="586.0" text="Most Frequent Item:" />
+                        <Label fx:id="ModeStoreLabel" layoutX="442.0" layoutY="586.0" text="Most Frequent Store:" />
+                        <Label fx:id="ModeCategoryLabel" layoutX="440.0" layoutY="559.0" text="Most Frequent Category:" />
                         <Button alignment="CENTER" layoutX="51.0" layoutY="516.0" mnemonicParsing="false" onAction="#handleDeleteSelectedButtonAction" text="Delete&#10;Selected" textAlignment="CENTER" />
-                        <Label fx:id="MeanPriceLabel" layoutX="443.0" layoutY="556.0" text="Mean Price of Purchases:" />
+                        <Label fx:id="MeanPriceLabel" layoutX="227.0" layoutY="614.0" text="Mean Price of Purchases:" />
                         <Text layoutX="37.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Use the search parameters to find a recorded purchase or a list of recorded purchases." />
-                     </children>
-                  </Pane>
-                  <Pane fx:id="HomePane" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: WHITE;">
-                     <children>
-                        <Label alignment="CENTER" layoutX="208.0" layoutY="50.0" text="Welcome to the &#10;Shopping List of the Future" textAlignment="CENTER">
-                           <font>
-                              <Font size="36.0" />
-                           </font>
-                        </Label>
-                        <Button layoutX="241.0" layoutY="222.0" mnemonicParsing="false" onAction="#handleAddPurchaseMenuAction" text="Add New&#10;Purchases&#10;" textAlignment="CENTER">
-                           <font>
-                              <Font size="24.0" />
-                           </font>
-                        </Button>
-                        <Button layoutX="460.0" layoutY="222.0" mnemonicParsing="false" onAction="#handleCreateListMenuAction" text="Manage&#10;Purchases&#10;" textAlignment="CENTER">
-                           <font>
-                              <Font size="24.0" />
-                           </font>
-                        </Button>
+                        <Label fx:id="QueryResultsLabel" layoutX="663.0" layoutY="509.0" prefHeight="17.0" prefWidth="60.0" text="0 result(s)" />
                      </children>
                   </Pane>
                </children>
