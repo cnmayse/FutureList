@@ -104,7 +104,7 @@ public class FXMLDocumentController implements Initializable {
         currentPurchases = purchaseData.query(null, null, null, null, null, null);
         purchaseFile.SavePurchases(currentPurchases);
         clearFields();
-     
+        UpcomingPurchases();
     }
     /**
      * Method to create a list based on the users parameters
@@ -129,12 +129,17 @@ public class FXMLDocumentController implements Initializable {
         if(QueryItemName.getText() != null && QueryItemName.getText().toString().equals("")){
                 QueryItemName.setText(null); 
         }       
+       
         
-        queryResult  = purchaseData.query(QueryStartDate.getValue(), QueryEndDate.getValue().plusDays(1), 
+        queryResult  = purchaseData.query(
+                QueryStartDate.getValue(), 
+                QueryEndDate.getValue(), 
                 QueryItemName.getText(), 
-                null, (StoreName) QueryStoreName.getValue(),
+                null, 
+                (StoreName) QueryStoreName.getValue(),
                 (PurchaseCategory) QueryCategory.getValue());
        
+        
         
         if(queryResult.size() > 0){
             //Sort the results based on date
@@ -147,7 +152,7 @@ public class FXMLDocumentController implements Initializable {
             //Find the time span of the query
             startDate = queryResult.get(0).getPurchaseDate();
             endDate = queryResult.get(queryResult.size()-1).getPurchaseDate();
-            Period period = endDate.until(startDate.plusDays(1));
+            Period period = startDate.until(endDate);
 
             TimeFrameLabel.setText("Time Frame: " + period.getDays() + " day(s)");
             MeanPriceLabel.setText("Mean Price of Purchases: " + currencyFormat.format(sGen.meanPrice(queryResult)));
@@ -201,7 +206,7 @@ public class FXMLDocumentController implements Initializable {
         AddStoreNameList.getChildren().clear();
         AddCategoryList.getChildren().clear();
         
-        todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null,null);
+        todayPurchases = purchaseData.query(newDate, newDate, null, null, null,null);
         TodayPurchasesList();
     }
     /**
@@ -237,6 +242,7 @@ public class FXMLDocumentController implements Initializable {
         purchaseFile.SavePurchases(currentPurchases);
         todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null, null);
         TodayPurchasesList();
+        UpcomingPurchases();
     }
     
     /**
@@ -258,21 +264,28 @@ public class FXMLDocumentController implements Initializable {
         currencyFormat = NumberFormat.getCurrencyInstance();
         todayPurchases = purchaseData.query(newDate.minusDays(1), newDate.plusDays(1), null, null, null, null);
         TodayPurchasesList();
+      
+        
         UpcomingPurchases();        
         AddMessageDate.setText("Add New Items for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());    
-        AddPurchasesDateLabel.setText("All Purchases for " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
+        AddPurchasesDateLabel.setText("All Purchases made on " + newDate.getMonth() + " " +  newDate.getDayOfMonth() + ", " + newDate.getYear());
         initAddItems();     
     }    
     /**
      * Method to control the list of upcoming purchases
      */
     public void UpcomingPurchases(){
+        ArrayList<String> itemNameArr = purchaseData.getPurchaseItemName();
+        
+        ArrayList<Purchase> PurchasesArr = mergeSortQuery(purchaseData.query(null, null, null, null, null, null));
+        Purchase predictPurchases ;
+          
         Day1Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()) + " (Today)");
-        Day1Text.setText("Milk\nBread\nBananas\nGas");
+        Day1Text.setText("");
        
         todayDate = todayDate.plusDays(1);        
         Day2Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));        
-        Day2Text.setText("Chicken\nBroccoli\nOranges\nT-Shirt");
+        Day2Text.setText("");
         
         todayDate = todayDate.plusDays(1);        
         Day3Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
@@ -280,20 +293,50 @@ public class FXMLDocumentController implements Initializable {
         
         todayDate = todayDate.plusDays(1);        
         Day4Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
-        Day4Text.setText("Car Payment\nEggs\nApples");
+        Day4Text.setText("");
         
         todayDate = todayDate.plusDays(1);        
         Day5Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
-        Day5Text.setText("Steak\nSpaghetti\nRed Sauce");
+        Day5Text.setText("");
         
         todayDate = todayDate.plusDays(1);        
         Day6Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
-        Day6Text.setText("Candy");
+        Day6Text.setText("");
         
         todayDate = todayDate.plusDays(1);        
         Day7Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()));
         todayDate = todayDate.now();
-        Day7Text.setText("Gas\nMilk");
+        Day7Text.setText("");
+        
+        for(int i =0; i < itemNameArr.size(); i ++){            
+            predictPurchases = sGen.predict(PurchasesArr, itemNameArr.get(i));            
+            
+            if(predictPurchases == null){
+                continue;
+            }
+            
+            if(predictPurchases.getPurchaseDate().equals(todayDate) || predictPurchases.getPurchaseDate().isBefore(todayDate)){
+                Day1Text.setText(Day1Text.getText() + "\n  " + predictPurchases.getItemName());
+            }
+            else if(predictPurchases.getPurchaseDate().equals(todayDate.plusDays(1))){
+                Day2Text.setText(Day2Text.getText() + "\n  " + predictPurchases.getItemName());
+            }
+            else if(predictPurchases.getPurchaseDate().equals(todayDate.plusDays(2))){
+                Day3Text.setText(Day3Text.getText() + "\n  " + predictPurchases.getItemName());
+            }
+            else if(predictPurchases.getPurchaseDate().equals(todayDate.plusDays(3))){
+                Day4Text.setText(Day4Text.getText() + "\n  " + predictPurchases.getItemName());
+            }
+            else if(predictPurchases.getPurchaseDate().equals(todayDate.plusDays(4))){                
+                Day5Text.setText(Day5Text.getText() + "\n  " + predictPurchases.getItemName());
+            }
+            else if(predictPurchases.getPurchaseDate().equals(todayDate.plusDays(5))){
+                Day6Text.setText(Day6Text.getText() + "\n  " + predictPurchases.getItemName());
+            }
+            else if(predictPurchases.getPurchaseDate().equals(todayDate.plusDays(6))){
+                Day7Text.setText(Day7Text.getText() + "\n  " + predictPurchases.getItemName());
+            }
+        }        
     }
     
     /**
@@ -469,7 +512,7 @@ public class FXMLDocumentController implements Initializable {
         int listIndex = 0;
         
         while(leftIndex < left.size() && rightIndex < right.size()){
-            if((left.get(leftIndex).getPurchaseDate()).isAfter(right.get(rightIndex).getPurchaseDate())){
+            if((left.get(leftIndex).getPurchaseDate()).isBefore(right.get(rightIndex).getPurchaseDate())){
                 list.set(listIndex, left.get(leftIndex));
                 leftIndex++;
             }
