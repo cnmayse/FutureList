@@ -1,10 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package shopping.list.csc340.project2;
+package ShoppingListPackage;
 
 import java.util.Locale;
 import javafx.application.Application;
@@ -14,7 +8,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- *
+ * This is the main class for the Shopping List program
+ * 
  * @author Matt
  */
 public class ShoppingListCSC340Project2 extends Application {
