@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * This is my/our own work. I/We have abided by UNCG's Academic integrity policy
  *
- * @author Charles Mayse, Ochaun Marshall
+ * @author Charles Mayse
  */
 /**
  * This class is used to generate statistics on sets of statistics
