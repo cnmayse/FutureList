@@ -1,15 +1,18 @@
-package shopping.list.csc340.project2;
+package ShoppingListPackage;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * This is my/our own work. I/We have abided by UNCG's Academic integrity policy
  *
- * @author Charles Mayse
+ * @author Charles Mayse, Ochaun Marshall
  */
 /**
  * This class is used to generate statistics on sets of statistics
@@ -195,5 +198,49 @@ public class StatisticGenerator {
         return (String)currentTop.getKey();
     }
     
+    public static Purchase predict(ArrayList<Purchase> series, String itemname) {
+        /**
+         * 1. Traverses through to calculate the average distance between days
+         * someone purchases an item 2. Creates an arraylist of future dates
+         * with the average interval two to 3 times in advaced with the price
+         */
+        LocalDate baseDate;
+        Integer baseInt;
+        List<LocalDate> dateSet = new ArrayList<LocalDate>();
+        List<Integer> timeInt = new ArrayList<Integer>();
+        for (int i = 0; i < series.size(); i++) {
+            if (series.get(i).getItemName().equalsIgnoreCase(itemname)) {
+                dateSet.add(series.get(i).getPurchaseDate());
+            }
+        }
+        if(dateSet.size() == 1){
+            return null;
+        }
+        baseDate = Collections.min(dateSet);
+        baseInt = baseDate.getDayOfYear();
+        
+        for (int i = 0; i < dateSet.size(); i++) {
+            timeInt.add((Integer) dateSet.get(i).getDayOfYear() - baseInt);
+                       
+            baseInt = dateSet.get(i).getDayOfYear();
+        }
+        int timeMean = sum(timeInt) / (timeInt.size()-1);
+        
+        ArrayList returnSeries = new ArrayList();
+        for (int i = 1; i < 4; i++) {
+            long solution = timeMean * i;
+            returnSeries.add(new Purchase(itemname, Collections.max(dateSet).plusDays(solution), 0.0, StoreName.AMAZON, PurchaseCategory.ETC_WEEKLY));
+        }
+       
+        return (Purchase)returnSeries.get(0);
+    }
+
+    private static int sum(List<Integer> bunch) {
+        int sum = 0;
+        for (int i = 0; i < bunch.size(); i++) {
+            sum += bunch.get(i);
+        }
+        return sum;
+    }
     
 }
