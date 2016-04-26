@@ -289,14 +289,10 @@ public class FXMLDocumentController implements Initializable {
      */
     public void UpcomingPurchases(){
         ArrayList<String> itemNameArr = purchaseData.getPurchaseItemName();
-        for(int i =0;i < itemNameArr.size(); i ++){
-            System.out.println(i + "Item Name: " + itemNameArr.get(i));
-        }
+        
         
         ArrayList<Purchase> PurchasesArr = mergeSortQuery(purchaseData.query(null, null, null, null, null, null));
-        for(int i=0; i < PurchasesArr.size(); i ++){
-            System.out.println(i + "PUrchase Item Name: " + PurchasesArr.get(i).getItemName());
-        }
+       
         Purchase predictPurchases ;
           
         Day1Date.setText(todayDate.getMonth().toString() + " " + Integer.toString(todayDate.getDayOfMonth()) +  ", " + Integer.toString(todayDate.getYear()) + " (Today)");
