@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Abstraction for holding and querying for purchases.
@@ -171,14 +172,13 @@ public class PurchaseData {
      * @param price item price
      * @param qStore Store Name
      * @param qCategory Category
-     * @return the list of purchases that fulfill the query requirements
+     * @return the list of purchases that fulfill the query requirements   * 
+     * 
+     * 
      */
-    public ArrayList query(LocalDate startBound, LocalDate endBound, String qName, Double price, StoreName qStore, PurchaseCategory qCategory) {
+   /* public ArrayList query(LocalDate startBound, LocalDate endBound, String qName, Double price, StoreName qStore, PurchaseCategory qCategory) {
         ArrayList queryResults = new ArrayList<Purchase>();
         
-        /**
-         * If no parameters specified, return all purchases
-         */
         if(startBound == null && endBound == null && qName == null && price == null && qStore == null && qCategory == null){
             queryResults.addAll((purchaseHashMap.values()));
             return queryResults;
@@ -350,8 +350,87 @@ public class PurchaseData {
         }
 
         return queryResults;
-    }
+    }*/
     
+    /**
+     * Queries the data collection based on inputs from the gui. If return is of
+     * 0 size, then there aren't any results
+     *
+     * @param startBound Staring date
+     * @param endBound Ending date
+     * @param qName Item Name
+     * @param price item price
+     * @param qStore Store Name
+     * @param qCategory Category
+     * @return the list of purchases that fulfill the query requirements
+     */
+    public ArrayList query(LocalDate startBound, LocalDate endBound, String qName, Double price, StoreName qStore, PurchaseCategory qCategory) {;
+        ArrayList queryResults = new ArrayList<>();
+        ArrayList subQueryList = new ArrayList<ArrayList>();
+        
+         if(startBound == null && endBound == null && qName == null && price == null && qStore == null && qCategory == null){
+            queryResults.addAll((purchaseHashMap.values()));
+            return queryResults;
+        }
+
+        if (startBound != null || endBound != null) {
+            ArrayList dateQuery = dateQuery(startBound, endBound);
+            if(dateQuery.size()>0)
+                subQueryList.add(dateQuery);
+            else
+                return queryResults;
+        }
+        if (qName != null) {
+            ArrayList nameQuery = itemNameQuery(qName);
+            if(nameQuery.size()>0)
+                subQueryList.add(nameQuery);
+            else 
+                return queryResults;
+        }
+        if (price != null) {
+            ArrayList priceQuery = priceQuery(price);
+            if(priceQuery.size()>0)
+                subQueryList.add(priceQuery);
+            else
+                return queryResults;
+        }
+        if (qStore != null) {
+            ArrayList storeQuery = storeQuery(qStore);
+            if(storeQuery.size()>0)
+                subQueryList.add(storeQuery);
+            else
+                return queryResults;
+        }
+        if (qCategory != null) {
+            ArrayList categoryQuery = categoryQuery(qCategory);
+            if(categoryQuery.size()>0)
+                subQueryList.add(categoryQuery);
+            else
+                return queryResults;
+        }
+
+        if (subQueryList.size() > 0) {
+            for (int i = 0; i < ((ArrayList) subQueryList.get(0)).size(); i++) {
+                //first purchase to check against all subqueries
+                Purchase currentPurchase = (Purchase) ((ArrayList) subQueryList.get(0)).get(i);
+                boolean isInAllSubqueries = true;
+                //check all subsequent subqueries
+                for (int k = 1; k < subQueryList.size(); k++) {
+                    if (!((ArrayList) subQueryList.get(k)).contains(currentPurchase)) {
+                        isInAllSubqueries = false;
+                    }
+                }
+                if (isInAllSubqueries) {
+                    queryResults.add(currentPurchase);
+                }
+            }
+
+            return queryResults;
+        } else {
+            return subQueryList;
+        }
+    }
+
     /**
      * Deletes a purchase from the record
      * @param p the purchase to delete
@@ -407,7 +486,7 @@ public class PurchaseData {
             }
         }
         
-         if(p.getPurchaseCategory() != null && purchaseHashMap.containsKey(p.getPurchaseCategory())){
+         if(p.getPurchaseCategory() != null && categoryHashMap.containsKey(p.getPurchaseCategory())){
             check = (ArrayList)categoryHashMap.get(p.getPurchaseCategory());
             if(check.contains(p.toString())){
                 check.remove(p.toString());
@@ -419,15 +498,153 @@ public class PurchaseData {
         }
          
     }
-    
+
     /**
      * Edits a purchase in a record, basically a swap.
+     *
      * @param op the original purchase record
      * @param np the new purchase record
      */
-    public void editPurchase(Purchase op, Purchase np){
+    public void editPurchase(Purchase op, Purchase np) {
         deletePurchase(op);
         addPurchase(np);
+    }
+
+    public int getPurchaseDataSize() {
+        return this.purchaseHashMap.size();
+    }
+
+    public ArrayList dateQuery(LocalDate startBound, LocalDate endBound) {
+        //Date subquery
+        //TODO: THE PROBLEM RESIDES IN THE FACT THAT WITHIN A BOUND, EACH PROSPECTIVE DATE MUST ADD, NOT REPLACE
+        //<editor-fold>
+        //ArrayList to hold all of the keys for the purchaseHashMap
+        ArrayList datePurchaseKeyList = new ArrayList<>();
+        ArrayList result = new ArrayList<>();
+        //startBound and endBound sub queries, does not execute if both bounds are not defined
+        if (startBound != null || endBound != null) {
+
+            //get the entry set of the dateHashMap
+            Set dateEntrySet = dateHashMap.entrySet();
+            //iterator to iterate through the entrySet
+            Iterator iterator = dateEntrySet.iterator();
+
+            //Iterate through the set
+            while (iterator.hasNext()) {
+                Map.Entry dateEntry = (Map.Entry) iterator.next();
+
+                //Get the date
+                LocalDate dateKey = (LocalDate) dateEntry.getKey();
+
+                //perform the start and end bound query, add matches 
+                if (startBound != null && endBound != null) {
+                    if ((dateKey.isAfter(startBound) || dateKey.isEqual(startBound)) && (dateKey.isEqual(endBound) || dateKey.isBefore(endBound))) {
+                        datePurchaseKeyList.addAll((ArrayList) dateEntry.getValue());
+                        continue;
+                    }
+                } //perform the start bound only query
+                else if (startBound != null && endBound == null) {
+                    if (dateKey.isAfter(startBound) || dateKey.isEqual(startBound)) {
+                        datePurchaseKeyList.addAll((ArrayList) dateEntry.getValue());
+                        continue;
+                    }
+                } //perform the end bound only query{
+                else if (endBound != null && startBound == null) {
+                    if (dateKey.isBefore(endBound) || dateKey.isEqual(endBound)) {
+                        datePurchaseKeyList.addAll((ArrayList) dateEntry.getValue());
+                        continue;
+                    }
+                }
+            }
+
+            for (int i = 0; i < datePurchaseKeyList.size(); i++) {
+                result.add(purchaseHashMap.get(datePurchaseKeyList.get(i)));
+            }
+        }
+        return result;
+    }
+
+    public ArrayList itemNameQuery(String name) {
+        //Array list to hold the keys for purchaseHashMap
+        ArrayList itemNameKeyList = null;
+        ArrayList results = new ArrayList<>();
+        //name subquery, does not execute if the parameter is not defined
+        if (name != null) {
+            if (itemNameHashMap.containsKey(name)) {
+                itemNameKeyList = (ArrayList) itemNameHashMap.get(name);
+            }
+            else
+                return results;
+        }
+
+        for (int i = 0; i < itemNameKeyList.size(); i++) {
+            results.add((Purchase) (getPurchaseByKey((String) itemNameKeyList.get(i))));
+        }
+
+        return results;
+    }
+
+    public ArrayList priceQuery(Double price) {
+        ArrayList priceKeyList = null;
+        ArrayList results = new ArrayList<>();
+        //price subquery, does not execute if the parameter is not defined
+        if (price != null) {
+            if (itemPriceHashMap.containsKey(price)) {
+                priceKeyList = (ArrayList) itemPriceHashMap.get(price);
+            }
+            else
+                return results;
+        }
+
+        for (int i = 0; i < priceKeyList.size(); i++) {
+            results.add((Purchase) (getPurchaseByKey((String) priceKeyList.get(i))));
+        }
+
+        return results;
+
+    }
+
+    public ArrayList storeQuery(StoreName name) {
+        ArrayList storeKeyList = null;
+        ArrayList results = new ArrayList<>();
+        //price subquery, does not execute if the parameter is not defined
+        if (name != null) {
+            if (storeNameHashMap.containsKey(name)) {
+                storeKeyList = (ArrayList) storeNameHashMap.get(name);
+            }
+            else
+                return results;
+        }
+
+        for (int i = 0; i < storeKeyList.size(); i++) {
+            results.add((Purchase) (getPurchaseByKey((String) storeKeyList.get(i))));
+        }
+
+        return results;
+
+    }
+
+    public ArrayList categoryQuery(PurchaseCategory category) {
+        ArrayList categoryKeyList = null;
+        ArrayList results = new ArrayList<>();
+        //category subquery, does not execute if the parameter is not defined
+        if (category != null) {
+            if (categoryHashMap.containsKey(category)) {
+                categoryKeyList = (ArrayList) categoryHashMap.get(category);
+            }
+            else
+                return results;
+        }
+
+        for (int i = 0; i < categoryKeyList.size(); i++) {
+            results.add((Purchase) (getPurchaseByKey((String) categoryKeyList.get(i))));
+        }
+
+        return results;
+    }
+
+    private Purchase getPurchaseByKey(String key) {
+        return (Purchase) purchaseHashMap.get(key);
     }
     
     public ArrayList<String> getPurchaseItemName(){
